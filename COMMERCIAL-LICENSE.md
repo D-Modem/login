@@ -1,6 +1,6 @@
 # Commercial license
 
-modemmenu is Copyright (C) 2026 D-Modem Authors and is offered
+dmodem-login is Copyright (C) 2026 D-Modem Authors and is offered
 under two licenses; you choose one.
 
 ## The GNU Affero General Public License, version 3 (the default)
@@ -8,9 +8,9 @@ under two licenses; you choose one.
 [LICENSE](LICENSE), AGPL-3.0-only.  Free of charge, for any purpose,
 commercial ones included, on the AGPL's terms.  In short:
 
-- If you distribute modemmenu, modified or not, you give the recipients
+- If you distribute dmodem-login, modified or not, you give the recipients
   its complete source code under the AGPL.
-- If you modify modemmenu and let people use it remotely (callers
+- If you modify dmodem-login and let people use it remotely (callers
   dialing in, or anyone using it over a network), you offer those users
   the complete source code of your modified version under the AGPL
   (section 13).
@@ -19,9 +19,9 @@ commercial ones included, on the AGPL's terms.  In short:
 
 For those who cannot or will not meet the AGPL's terms, for example to:
 
-- ship modemmenu, or a modified version, inside a product whose source
+- ship dmodem-login, or a modified version, inside a product whose source
   you do not publish;
-- run a modified modemmenu as a service without offering its source to
+- run a modified dmodem-login as a service without offering its source to
   the people who use it;
 - combine it with code under licenses that do not mix with the AGPL.
 
@@ -32,7 +32,7 @@ Neo-Desktop (<https://github.com/Neo-Desktop>) is the point of contact
 for commercial licenses.
 
 **To ask for one**, contact Neo-Desktop, or open an issue at
-<https://github.com/D-Modem/menu/issues> titled "Commercial
+<https://github.com/D-Modem/login/issues> titled "Commercial
 license", saying who you are and roughly what you want to do.  Keep
 anything confidential out of the issue: a private channel follows from
 there.

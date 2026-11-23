@@ -41,8 +41,6 @@ test:
 
 install: all
 	install -D -m 755 dmodem-login $(DESTDIR)$(BINDIR)/dmodem-login
-	# modemmenu: the old name, for app_dmodem profiles that still use it
-	ln -sf dmodem-login $(DESTDIR)$(BINDIR)/modemmenu
 	[ -e $(DESTDIR)$(CONF_DIR)/dmodem-login.conf ] || \
 		install -D -m 640 samples/dmodem-login.conf.sample $(DESTDIR)$(CONF_DIR)/dmodem-login.conf
 	[ -e $(DESTDIR)$(CONF_DIR)/dmodem-login.users ] || \
@@ -50,16 +48,13 @@ install: all
 	[ $(PAM) != 1 ] || [ -e $(DESTDIR)/etc/pam.d/dmodem-login ] || \
 		install -D -m 644 samples/dmodem-login.pam.sample $(DESTDIR)/etc/pam.d/dmodem-login
 	[ $(PPPD) != 1 ] || \
-		{ install -D -m 644 pppd/dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/dmodem-login.so && \
-		  ln -sf dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/modemmenu.so; }
+		install -D -m 644 pppd/dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/dmodem-login.so
 
 # FreePBX (freepbx/README.md): the files in /etc/dmodem-login, out of
 # fwconsole chown's way; files already there are kept
 FREEPBX_CONF_DIR ?= /etc/dmodem-login
 install-freepbx: all
 	install -D -m 755 dmodem-login $(DESTDIR)$(BINDIR)/dmodem-login
-	# modemmenu: the old name, for app_dmodem profiles that still use it
-	ln -sf dmodem-login $(DESTDIR)$(BINDIR)/modemmenu
 	[ -e $(DESTDIR)$(FREEPBX_CONF_DIR)/dmodem-login.conf ] || \
 		install -D -m 644 freepbx/dmodem-login.conf $(DESTDIR)$(FREEPBX_CONF_DIR)/dmodem-login.conf
 	[ -e $(DESTDIR)$(FREEPBX_CONF_DIR)/dmodem-login.users ] || \
@@ -67,8 +62,7 @@ install-freepbx: all
 	[ -e $(DESTDIR)/etc/systemd/system/dmodem-login.service ] || \
 		install -D -m 644 freepbx/dmodem-login.service $(DESTDIR)/etc/systemd/system/dmodem-login.service
 	[ $(PPPD) != 1 ] || \
-		{ install -D -m 644 pppd/dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/dmodem-login.so && \
-		  ln -sf dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/modemmenu.so; }
+		install -D -m 644 pppd/dmodem-login.so $(DESTDIR)$(PPPD_PLUGIN_DIR)/dmodem-login.so
 
 clean:
 	rm -f dmodem-login pppd/dmodem-login.so

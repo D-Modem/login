@@ -27,12 +27,7 @@ is D-Modem/menu. Its new name is
 You can install the new version on an old installation. These items
 continue to operate:
 
-- `make install` and `make install-freepbx` also install `modemmenu`, a
-  link to `dmodem-login`. An `app_dmodem` profile that starts
-  `/usr/local/bin/modemmenu` continues to operate.
-- The pppd plugin is also installed as `modemmenu.so`, a link to
-  `dmodem-login.so`. The plugin also accepts the `modemmenu-socket`
-  option.
+- The pppd plugin also accepts the `modemmenu-socket` option.
 - If `-config` is not given and `/etc/asterisk/dmodem-login.conf` is not
   there, dmodem-login reads `/etc/asterisk/modemmenu.conf`.
 - If `[file] path` is not given and `/etc/asterisk/dmodem-login.users` is
@@ -45,6 +40,10 @@ continue to operate:
 
 ## What you must change
 
+- The program is now `/usr/local/bin/dmodem-login`. Change each
+  `app_dmodem` profile that starts `/usr/local/bin/modemmenu`, and each
+  pppd option file that loads `modemmenu.so`. Then delete the old
+  program and the old plugin.
 - The default socket of `-serve` is now
   `/run/dmodem-login/dmodem-login.sock`. If your configuration does not
   give `[server] listen`, set it to the old path, or change the
