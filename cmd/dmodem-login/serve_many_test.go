@@ -351,8 +351,10 @@ command = echo info
 		}
 		held = append(held, l)
 	}
+	// the server can say that the lines are busy and hang up before the
+	// header is written (broken pipe): what it said is read all the same
 	l, err := dialLine(sock, "")
-	if err != nil {
+	if l == nil {
 		t.Fatal(err)
 	}
 	if err := l.expect("All lines are busy"); err != nil {
