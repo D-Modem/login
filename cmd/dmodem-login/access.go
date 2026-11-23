@@ -105,7 +105,7 @@ func loadAccess(c *config.File, s *settings) error {
 	if s.limits.dailyLimit, err = g.Duration("daily_limit", 0); err != nil {
 		return err
 	}
-	s.limits.stateDir = g.Get("state_dir", config.Legacy("/var/lib/dmodem-login", "/var/lib/modemmenu"))
+	s.limits.stateDir = g.Get("state_dir", "/var/lib/dmodem-login")
 	if s.limits.warnings, err = g.Durations("time_warning", "2m"); err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func loadAccess(c *config.File, s *settings) error {
 		return err
 	}
 	s.signup.name = su.Get("name", "new")
-	s.signup.file = su.Get("file", c.Section("file").Get("path", config.Legacy("/etc/asterisk/dmodem-login.users", "/etc/asterisk/modemmenu.users")))
+	s.signup.file = su.Get("file", c.Section("file").Get("path", "/etc/asterisk/dmodem-login.users"))
 	if s.signup.pending, err = su.Bool("pending", true); err != nil {
 		return err
 	}

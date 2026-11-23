@@ -37,7 +37,7 @@ type Account struct {
 func NewSystem(s *config.Section) (Authenticator, error) {
 	var err error
 	a := &System{
-		service:  s.Get("pam_service", pamService()),
+		service:  s.Get("pam_service", "dmodem-login"),
 		groups:   config.Fields(s.Get("groups", "")),
 		lookup:   LookupNSS,
 		inGroups: InGroupsNSS,
@@ -91,13 +91,4 @@ func (a *System) allowed(acct *Account) error {
 		return fmt.Errorf("%w: %s is in none of %s", ErrNoUser, acct.name, strings.Join(a.groups, ", "))
 	}
 	return nil
-}
-
-// pamService: dmodem-login, or modemmenu (the old name) when only its
-// /etc/pam.d file is there
-func pamService() string {
-	if config.Legacy("/etc/pam.d/dmodem-login", "/etc/pam.d/modemmenu") == "/etc/pam.d/modemmenu" {
-		return "modemmenu"
-	}
-	return "dmodem-login"
 }

@@ -126,13 +126,7 @@ jobs:
 
       - name: bbs against this login
         working-directory: bbs
-        # a bbs that still imports the old module path (github.com/D-Modem/menu)
-        # is moved to the new one first
         run: |
-          if grep -q 'github.com/D-Modem/menu ' go.mod; then
-            grep -rl 'github.com/D-Modem/menu' --include='*.go' . | xargs -r sed -i 's#github.com/D-Modem/menu#github.com/D-Modem/login#g'
-            go mod edit -droprequire github.com/D-Modem/menu
-          fi
           go mod edit -replace github.com/D-Modem/login=../login
           go mod tidy
 

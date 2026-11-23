@@ -41,9 +41,7 @@ func logf(format string, args ...any) { logger.Printf(format, args...) }
 // main: the flags; then -hash, -check, -authd, -ldapd or -serve, or a call on
 // stdin and stdout
 func main() {
-	// an install from before the rename: modemmenu.conf
-	defConfig := config.Legacy("/etc/asterisk/dmodem-login.conf", "/etc/asterisk/modemmenu.conf")
-	config := flag.String("config", defConfig, "the configuration `file`")
+	config := flag.String("config", "/etc/asterisk/dmodem-login.conf", "the configuration `file`")
 	rate := flag.String("rate", os.Getenv("DMODEM_RATE"), "the connect `rate`, tx/rx bit/s (default $DMODEM_RATE)")
 	dialed := flag.String("dialed", os.Getenv("DMODEM_DIALED"), "the dialed `number` (default $DMODEM_DIALED)")
 	callerID := flag.String("callerid", os.Getenv("DMODEM_CALLERID"), "the caller's `number` (default $DMODEM_CALLERID)")

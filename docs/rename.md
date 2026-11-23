@@ -22,24 +22,22 @@ is D-Modem/menu. Its new name is
 | `MODEMMENU_*` (environment) | `DMODEM_LOGIN_*` |
 | nftables table `modemmenu_dialup` | `dmodem_login_dialup` |
 
-## What continues to operate
-
-You can install the new version on an old installation. These items
-continue to operate:
-
-- The pppd plugin also accepts the `modemmenu-socket` option.
-- If `-config` is not given and `/etc/asterisk/dmodem-login.conf` is not
-  there, dmodem-login reads `/etc/asterisk/modemmenu.conf`.
-- If `[file] path` is not given and `/etc/asterisk/dmodem-login.users` is
-  not there, dmodem-login reads `/etc/asterisk/modemmenu.users`. The
-  sign-up uses the same file.
-- If `state_dir` is not given and `/var/lib/dmodem-login` is not there,
-  dmodem-login uses `/var/lib/modemmenu`.
-- If `pam_service` is not given and `/etc/pam.d/dmodem-login` is not
-  there, dmodem-login uses the PAM service `modemmenu`.
-
 ## What you must change
 
+dmodem-login does not read the old names. On an old installation, do
+these steps before you start the new version.
+
+- Rename `/etc/asterisk/modemmenu.conf` to
+  `/etc/asterisk/dmodem-login.conf`, or give the old path with `-config`.
+- Rename `/etc/asterisk/modemmenu.users` to
+  `/etc/asterisk/dmodem-login.users`, or give the old path in
+  `[file] path`.
+- Rename `/var/lib/modemmenu` to `/var/lib/dmodem-login`, or give the
+  old path in `state_dir`.
+- Rename `/etc/pam.d/modemmenu` to `/etc/pam.d/dmodem-login`, or set
+  `pam_service = modemmenu`.
+- In each pppd option file, change the `modemmenu-socket` option to
+  `dmodem-login-socket`.
 - The program is now `/usr/local/bin/dmodem-login`. Change each
   `app_dmodem` profile that starts `/usr/local/bin/modemmenu`, and each
   pppd option file that loads `modemmenu.so`. Then delete the old
