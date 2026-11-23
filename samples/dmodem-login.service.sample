@@ -1,0 +1,20 @@
+# /etc/systemd/system/dmodem-login.service - dmodem-login -serve for app_dmodem's
+# mode = unix profiles (dmodem.conf: path = /run/dmodem-login/dmodem-login.sock,
+# header = yes); [server] socket_group = asterisk lets Asterisk connect
+[Unit]
+Description=dmodem-login: login and menu for dial-up callers
+Before=asterisk.service
+
+[Service]
+ExecStart=/usr/local/bin/dmodem-login -config /etc/asterisk/dmodem-login.conf -serve
+RuntimeDirectory=dmodem-login
+RuntimeDirectoryMode=0755
+# daily_limit's state_dir = /var/lib/dmodem-login
+StateDirectory=dmodem-login
+Restart=on-failure
+# root for auth = system (PAM's pam_unix) and run_as; otherwise a user of
+# its own, e.g. User=dmodem-login
+User=root
+
+[Install]
+WantedBy=multi-user.target

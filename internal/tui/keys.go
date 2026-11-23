@@ -8,7 +8,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/D-Modem/menu/internal/term"
+	"github.com/D-Modem/login/internal/term"
 )
 
 // Keys that are no character, as runes past Unicode's private area.

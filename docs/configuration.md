@@ -1,6 +1,6 @@
 # Configuration
 
-[modemmenu.conf.sample](../samples/modemmenu.conf.sample) has all the options. The
+[dmodem-login.conf.sample](../samples/dmodem-login.conf.sample) has all the options. The
 [configuration reference](reference.md) lists all of them, section by section. This is a
 short example:
 
@@ -20,10 +20,10 @@ sysops = alice
 enabled = yes           ; "guest" at the login prompt, no password
 
 [file]
-path = /etc/asterisk/modemmenu.users
+path = /etc/asterisk/dmodem-login.users
 
 [system]
-pam_service = modemmenu
+pam_service = dmodem-login
 groups = dialup
 
 [menu]
@@ -65,14 +65,14 @@ mode = passwd
 Comments start with `;` or `#`. A comment can be on its own line, or
 after a value. After a value, a space or tab must come before the
 comment, and the comment must be outside `"quotes"`. `\;` and `\#` are
-the characters themselves. `modemmenu -check -config FILE` checks a
-configuration. `modemmenu -setup -config FILE` changes it on a full
+the characters themselves. `dmodem-login -check -config FILE` checks a
+configuration. `dmodem-login -setup -config FILE` changes it on a full
 screen ([the sysop's setup](setup.md)).
 
 ## The connect rate
 
 
-Immediately after the banner, before the login prompt, modemmenu tells
+Immediately after the banner, before the login prompt, dmodem-login tells
 the caller the connect rate of the modems, as BBSs did:
 
 ```
@@ -85,7 +85,7 @@ direction ("down" is to the caller). `[general] connect_message`
 (`"\r\nConnected at {speed}.\r\n"`) is the text. `{speed}` is the rate
 in this format. It also operates in the other texts (the welcome, the
 message of the day, the prompt). If the rate is not known (no
-`DMODEM_RATE` and no `-rate`), modemmenu does not show the message.
+`DMODEM_RATE` and no `-rate`), dmodem-login does not show the message.
 `connect_message = ""` disables the message. `{baud}`, `{tx_rate}` and
 `{rx_rate}` are only the numbers. For example, use `connect_message =
 "CONNECT {baud}\r\n"` to show the same words as a modem.
@@ -93,14 +93,14 @@ message of the day, the prompt). If the rate is not known (no
 ## The caller's terminal
 
 
-Before the banner, modemmenu asks the terminal of the caller what type
+Before the banner, dmodem-login asks the terminal of the caller what type
 of terminal it is, as [bbs-sec](https://github.com/D-Modem/bbs) does. It
 asks in this sequence:
 
-1. **ANSI**: modemmenu moves the cursor to the bottom right corner and
+1. **ANSI**: dmodem-login moves the cursor to the bottom right corner and
    asks for its position (`CSI 6n`). An ANSI terminal answers, and the
    answer is its size. On an ANSI terminal, nothing shows. On other
-   terminals, modemmenu erases the question.
+   terminals, dmodem-login erases the question.
 2. **VT52**, if the terminal is not ANSI: `ESC Z`. A VT52 answers
    `ESC / K`.
 3. **The type of an ANSI terminal**: the questions of DEC (the
@@ -113,33 +113,33 @@ asks in this sequence:
    DEL, the cursor keys, the function keys and the shifted letters are
    bytes that only a Commodore sends. If one of them comes, the prompt
    starts again in PETSCII. If the caller types a name all in capitals
-   (the unshifted keys of a Commodore, or ASCII in capitals), modemmenu
+   (the unshifted keys of a Commodore, or ASCII in capitals), dmodem-login
    shows `PRESS DEL (OR BACKSPACE):`. The key that comes tells which
    terminal it is. After that, the texts of the menu are in PETSCII. The
    cases of the letters are swapped, as in the lower/upper case set of
-   the C64. Line ends are RETURN, and modemmenu removes escape sequences.
-   modemmenu reads the keys of the caller as ASCII. A selection sends and
+   the C64. Line ends are RETURN, and dmodem-login removes escape sequences.
+   dmodem-login reads the keys of the caller as ASCII. A selection sends and
    gets its own data without changes.
 
 Some input can come during the questions that is not an answer (for
 example, a caller who types immediately). That input goes to the login.
-A PPP frame stops the questions and goes to AutoPPP. modemmenu records
+A PPP frame stops the questions and goes to AutoPPP. dmodem-login records
 the result in the log (`terminal vt (XTerm(390)) 132x50`) and gives it
 to the selection:
 
 | placeholder | environment | |
 |---|---|---|
-| `{terminal}` | `MODEM_TERMINAL` | `vt` (an ANSI terminal that gave its type), `ansi`, `vt52`, `petscii`, `ascii`. Empty if modemmenu did not ask |
+| `{terminal}` | `MODEM_TERMINAL` | `vt` (an ANSI terminal that gave its type), `ansi`, `vt52`, `petscii`, `ascii`. Empty if dmodem-login did not ask |
 | `{term}` | `MODEM_TERM`, and `TERM` of exec items | a terminal type for the terminal: `xterm`, `syncterm`, `vt100`, `vt220`... `vt520`, `ansi`, `vt52`, `dumb` |
 | `{term_name}` | `MODEM_TERM_NAME` | the type that the terminal gave: `XTerm(390)`, `VT220`, `SyncTERM (CTerm 1.316)`, or its answerback |
-| `{rows}`, `{cols}` | `MODEM_ROWS`, `MODEM_COLS` | the size of the terminal (40 by 25 for a Commodore). modemmenu also sets the size on the line for exec items (`stty size`) |
+| `{rows}`, `{cols}` | `MODEM_ROWS`, `MODEM_COLS` | the size of the terminal (40 by 25 for a Commodore). dmodem-login also sets the size on the line for exec items (`stty size`) |
 
 For example, use `rlogin_terminal = {term}/{baud}` for a BBS that gets
 the type from rlogin. Another example is `[dropfile] emulation = auto`
 (the default). It gives ASCII to a door for a terminal without ANSI
 (VT52, PETSCII, a plain terminal), and ANSI for other terminals. An item
 with `header = yes` sends the result to the next program. Thus a
-downstream `modemmenu -serve` does not ask again.
+downstream `dmodem-login -serve` does not ask again.
 
 ```ini
 [terminal]
@@ -155,9 +155,9 @@ does not answer, they take `timeout` (2 s for ANSI, 1 s for VT52).
 ## Message of the day
 
 
-After the welcome and before the menu, modemmenu shows
+After the welcome and before the menu, dmodem-login shows
 `[general] motd`. Then it shows the file `motd_file` (for example,
-`/etc/motd`). You can use one of them or the two. modemmenu reads the
+`/etc/motd`). You can use one of them or the two. dmodem-login reads the
 file at each login, thus changes show immediately. `{placeholders}`
 operate in the two. For example:
 `motd = "Hello {user}, you called {dialed}.\r\n"`.
@@ -173,7 +173,7 @@ can have more than one character (`key = SH`). The menu shows the keys,
 and aligns their labels.
 
 - `?` or `menu` shows the menu again. If the choice is unknown,
-  modemmenu tells the caller and asks again.
+  dmodem-login tells the caller and asks again.
 - `[menu] hangup` lists the words that hang up. By default, these are
   `G goodbye bye logoff`. The menu shows the first word.
 - `hotkeys = yes` selects with one key, without Enter. Then each key
@@ -194,7 +194,7 @@ with a minimum size of 40x14. The full-screen menu has these parts:
   letter of an item) and pushes Enter. Alternatively, the key of an item
   in `[ ]` starts the item immediately.
 - The motd, in a box over the menu. If the motd has ANSI escapes,
-  modemmenu first shows it without changes, then "Press any key".
+  dmodem-login first shows it without changes, then "Press any key".
 - The `help` of an item, under the menu.
 - A bar at the top with the user, the rate and the time. A bar at the
   bottom with the minutes that remain.
@@ -220,12 +220,12 @@ charset = auto      ; utf8, cp437, dec or ascii
 help = Messages, files and doors on the board
 ```
 
-For the lines of the screen, modemmenu asks an ANSI terminal if it
+For the lines of the screen, dmodem-login asks an ANSI terminal if it
 shows UTF-8. To do this, it writes an `é` and asks for the position of
 the cursor. SyncTERM uses code page 437. Without UTF-8, a VT or xterm
 gets its line-drawing set, and other terminals get code page 437.
-modemmenu sends only the cells that change. Below 9600 bit/s, the
-desktop is plain blue, not shaded, because modemmenu can clear it in a
+dmodem-login sends only the cells that change. Below 9600 bit/s, the
+desktop is plain blue, not shaded, because dmodem-login can clear it in a
 few bytes. At 2400 bit/s, the first screen is about 1 KB, and a movement
 of the bar is a few hundred bytes.
 
@@ -247,13 +247,13 @@ must pass:
 
 An item without `users` or `groups` is for all logged-in callers.
 
-modemmenu uses LDAP groups when `[ldap] group_base` is set. A group is
+dmodem-login uses LDAP groups when `[ldap] group_base` is set. A group is
 an entry under `group_base` that `group_filter` finds. The default filter
 is `(&(cn={group})(|(member={dn})(uniqueMember={dn})(memberUid={user})))`.
 It accepts `groupOfNames`, `groupOfUniqueNames` and `posixGroup` entries.
 `{group}` is the group of the item, `{dn}` is the entry of the caller,
 and `{user}` is the name of the caller. The search runs as
-`search_bind_dn` if it is set. If not, it runs as the caller. modemmenu
+`search_bind_dn` if it is set. If not, it runs as the caller. dmodem-login
 keeps the answer for each group until the call ends.
 
 ## Guests and new accounts
@@ -272,11 +272,11 @@ login prompt starts a new account. The caller gives these items:
   users file or the system can have it.
 - A password of `min_password` characters, two times.
 
-modemmenu adds the account at the end of the users file as
+dmodem-login adds the account at the end of the users file as
 `user:bcrypt:signup DATE CALLERID`. The users file is `[signup] file`
 (by default, the file of the `[file]` backend). `auth` must have `file`.
 With `pending = yes` (the default), the account is locked
-(`user:!bcrypt`). modemmenu tells the caller that the account waits for
+(`user:!bcrypt`). dmodem-login tells the caller that the account waits for
 the sysop. To unlock the account, the sysop removes the `!`. With
 `pending = no`, the caller is logged in immediately.
 
@@ -293,7 +293,7 @@ Numbers are patterns, with `*` and `?` as in file names. A refused caller
 hears `deny_message`, and the call ends.
 
 `[number PATTERN]` sections apply special rules to one number or to a
-small number of numbers. modemmenu uses the first section that agrees
+small number of numbers. dmodem-login uses the first section that agrees
 with the number:
 
 ```
@@ -312,21 +312,21 @@ number (your own trunk, not a SIP peer that all persons can get to).
 
 
 `[general] time_limit` limits each call, from the login.
-`daily_limit` limits all the calls of a user in one day. modemmenu keeps
+`daily_limit` limits all the calls of a user in one day. dmodem-login keeps
 the daily use in `state_dir/usage/USER`. The `StateDirectory` of the
 systemd unit makes this directory. Guests have only `[guest] time_limit`.
 
-If a caller has no more time for the day, modemmenu tells the caller
-after the login. When the time ends, the menu ends, and modemmenu hangs
+If a caller has no more time for the day, dmodem-login tells the caller
+after the login. When the time ends, the menu ends, and dmodem-login hangs
 up a selection that runs. A program gets `SIGHUP`, then `SIGKILL` 10
-seconds later. modemmenu closes the connection to a server.
+seconds later. dmodem-login closes the connection to a server.
 `{time_left}` shows the time that remains, in whole minutes (empty
 without a limit). For example, you can use it in `[menu] prompt`. The
 selection gets it as `MODEM_TIME_LEFT`.
 
-Before the limit, modemmenu writes `time_warning_message` on the line,
+Before the limit, dmodem-login writes `time_warning_message` on the line,
 in the output of the selection that runs. Thus a caller in a BBS or a
-shell has time to complete the work. modemmenu writes the message one
+shell has time to complete the work. dmodem-login writes the message one
 time for each of the times in `time_warning`. For example, `5m 1m` gives
 a warning when 5 minutes remain and when 1 minute remains. The default
 is one warning at 2 minutes. `0` gives no warning. If a selection starts
@@ -375,9 +375,9 @@ after = menu
 and configuration of your DOSEMU.)
 
 - **Node:** each run of a door gets its own node. This is the first free
-  node of `[dropfile] max_nodes`. modemmenu holds the node (a lock in
+  node of `[dropfile] max_nodes`. dmodem-login holds the node (a lock in
   `state_dir/nodes`) until the door ends. Thus doors with shared data see
-  callers on different nodes, also under `modemmenu -serve`.
+  callers on different nodes, also under `dmodem-login -serve`.
 - **User number:** each user gets a number the first time
   (`state_dir/usernumbers`). The user keeps the same number after that.
   This is for doors that keep records for each user by this number.
@@ -395,7 +395,7 @@ The files have DOS line ends, as doors expect. They have upper-case
 names, unless `dropfile_lowercase = yes` (doors on Linux frequently look
 for `door32.sys`). `[dropfile]` holds the data about the BBS and the
 line that the files contain. Its defaults are the values that Synchronet
-writes for a door on stdin and stdout. modemmenu runs doors in this
+writes for a door on stdin and stdout. dmodem-login runs doors in this
 way:
 
 | `[dropfile]` | default | why |
@@ -419,14 +419,14 @@ how Synchronet runs doors on Linux
 
 A `mode = callers` item shows the last callers (`count`, 10). It shows
 the time, the user and the connect rate of each login, with the newest
-first. If there is such an item, modemmenu records each login in
+first. If there is such an item, dmodem-login records each login in
 `state_dir/callers` (the latest 200). It does not record the caller ID,
 because all callers see the list.
 
 ## More items
 
 
-The end of [modemmenu.conf.sample](../samples/modemmenu.conf.sample) has items that
+The end of [dmodem-login.conf.sample](../samples/dmodem-login.conf.sample) has items that
 you can copy. Each item must have its program:
 
 | item | program |
@@ -439,7 +439,7 @@ you can copy. Each item must have its program:
 | gopher | lynx on Gopherspace, fast also at 2400 bit/s |
 | callers | the last callers (refer to the section above) |
 
-They run as the caller (`run_as = {user}`, thus modemmenu runs as root)
+They run as the caller (`run_as = {user}`, thus dmodem-login runs as root)
 with a cooked terminal (`tty = sane`). After they end, the caller goes
 back to the menu.
 
@@ -474,14 +474,14 @@ Each type of selection gets these values in a different way:
   shell-quoted word, thus write `{user}` and not `"{user}"`. With
   `session_file = yes`, the program also gets all the values as JSON in
   a 0600 file. `MODEM_SESSION_FILE` gives the name of the file.
-  modemmenu removes the file when the program ends. `run_as` runs the
-  program as a system user (modemmenu must be root). `tty = sane` gives
+  dmodem-login removes the file when the program ends. `run_as` runs the
+  program as a system user (dmodem-login must be root). `tty = sane` gives
   it a cooked terminal.
 - **rlogin**: the RFC 1282 handshake. By default, it sends the password
   as the client user, the user name as the server user and `ansi/{baud}`
   as the terminal. Synchronet, Mystic and other BBSs use this to log in a
   caller without a second login prompt.
-- **tcp** and **telnet**: modemmenu sends `send` (for example,
+- **tcp** and **telnet**: dmodem-login sends `send` (for example,
   `send = "{user}\r{password}\r"`) when the connection is made. telnet
   negotiates binary, echo and the terminal type.
 - **unix**: the same as **tcp**, raw, to a server on the unix socket
@@ -492,7 +492,7 @@ Each type of selection gets these values in a different way:
   contains the password only with `pass_password`. The header comes
   before `send` or the protocol. It contains the time that remains
   (`MODEM_TIME_LEFT`, `MODEM_SECONDS_LEFT`). A downstream
-  `modemmenu -serve` keeps that time as its own limit, also if it does
+  `dmodem-login -serve` keeps that time as its own limit, also if it does
   not trust the header, because the limit can only make the call
   shorter. Thus a caller cannot get more time when the caller goes from
   one menu to a different menu.
@@ -510,7 +510,7 @@ An item can transfer the caller to a different menu application on a
 unix socket. The caller can stay logged in if these conditions are
 true:
 
-- The other application is a `modemmenu -serve`.
+- The other application is a `dmodem-login -serve`.
 - The item sends the session header.
 - That server has `trust_user = yes`.
 
@@ -525,13 +525,13 @@ header.
 key = M
 label = More services
 mode = unix
-path = /run/modemmenu/more.sock
+path = /run/dmodem-login/more.sock
 header = yes
 after = menu
 
-; the other menu's modemmenu.conf
+; the other menu's dmodem-login.conf
 [server]
-listen = /run/modemmenu/more.sock
+listen = /run/dmodem-login/more.sock
 trust_user = yes
 socket_mode = 0600
 ```

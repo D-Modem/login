@@ -12,15 +12,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
-// MODEMMENU_TEST_PAM=user:password of an account the PAM service
-// modemmenu (/etc/pam.d/modemmenu) accepts; run as root for pam_unix
+// DMODEM_LOGIN_TEST_PAM=user:password of an account the PAM service
+// dmodem-login (/etc/pam.d/dmodem-login) accepts; run as root for pam_unix
 func TestPAM(t *testing.T) {
-	cred := os.Getenv("MODEMMENU_TEST_PAM")
+	cred := os.Getenv("DMODEM_LOGIN_TEST_PAM")
 	if cred == "" {
-		t.Skip("MODEMMENU_TEST_PAM is not set")
+		t.Skip("DMODEM_LOGIN_TEST_PAM is not set")
 	}
 	user, pw, _ := strings.Cut(cred, ":")
 	a, err := NewSystem(&config.Section{Name: "system", Vals: map[string]string{}})
@@ -42,12 +42,12 @@ func TestPAM(t *testing.T) {
 	}
 }
 
-// MODEMMENU_TEST_PAM, a password stack in /etc/pam.d/modemmenu: the
+// DMODEM_LOGIN_TEST_PAM, a password stack in /etc/pam.d/dmodem-login: the
 // account's password changed and back
 func TestPAMChangePassword(t *testing.T) {
-	cred := os.Getenv("MODEMMENU_TEST_PAM")
+	cred := os.Getenv("DMODEM_LOGIN_TEST_PAM")
 	if cred == "" {
-		t.Skip("MODEMMENU_TEST_PAM is not set")
+		t.Skip("DMODEM_LOGIN_TEST_PAM is not set")
 	}
 	user, pw, _ := strings.Cut(cred, ":")
 	a, err := NewSystem(&config.Section{Name: "system", Vals: map[string]string{}})

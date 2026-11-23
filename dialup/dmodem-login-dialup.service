@@ -1,0 +1,15 @@
+# the dial-up callers' network: VRF, egress, firewall (dialup.conf)
+[Unit]
+Description=dmodem-login dial-up network
+After=network-online.target
+Wants=network-online.target
+Before=dmodem-login.service dmodem-login-dns.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/dmodem-login-dialup up
+ExecStop=/usr/local/sbin/dmodem-login-dialup down
+
+[Install]
+WantedBy=multi-user.target

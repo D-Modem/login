@@ -1,4 +1,4 @@
-# build: modemmenu with PAM and the pppd plugin (libpam's and pppd's
+# build: dmodem-login with PAM and the pppd plugin (libpam's and pppd's
 # headers, so the AutoPPP test loads the plugin into pppd/test/host.c), on
 # the Go of go.mod's toolchain line; gofmt, go.mod and go.sum tidy, go vet
 # and the tests with the race detector.
@@ -7,8 +7,8 @@
 # go.mod's go line (Go 1.22, the oldest it promises; GOTOOLCHAIN=local so
 # go.mod's toolchain line doesn't switch it to a newer one).
 #
-# bbs: bbs's main built, vetted and tested against this checkout of menu
-# (go mod edit -replace): bbs logs in with menu's authd client, so a
+# bbs: bbs's main built, vetted and tested against this checkout of login
+# (go mod edit -replace): bbs logs in with login's authd client, so a
 # change here that breaks bbs fails here, not after bbs next updates.
 #
 # A change to docs alone runs nothing: the Markdown, docs/, the site's
@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          path: menu
+          path: login
 
       - uses: actions/checkout@v6
         with:
@@ -122,12 +122,18 @@ jobs:
           go-version-file: bbs/go.mod
           cache-dependency-path: |
             bbs/go.sum
-            menu/go.sum
+            login/go.sum
 
-      - name: bbs against this menu
+      - name: bbs against this login
         working-directory: bbs
+        # a bbs that still imports the old module path (github.com/D-Modem/menu)
+        # is moved to the new one first
         run: |
-          go mod edit -replace github.com/D-Modem/menu=../menu
+          if grep -q 'github.com/D-Modem/menu ' go.mod; then
+            grep -rl 'github.com/D-Modem/menu' --include='*.go' . | xargs -r sed -i 's#github.com/D-Modem/menu#github.com/D-Modem/login#g'
+            go mod edit -droprequire github.com/D-Modem/menu
+          fi
+          go mod edit -replace github.com/D-Modem/login=../login
           go mod tidy
 
       - name: Build

@@ -1,7 +1,7 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package config reads modemmenu.conf: [sections] of key = value, the
+// Package config reads dmodem-login.conf: [sections] of key = value, the
 // values as strings, yes/no, numbers and durations, and the {name}
 // templates of its strings.
 package config
@@ -242,4 +242,16 @@ func Fields(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool {
 		return r == ',' || r == ' ' || r == '\t'
 	})
+}
+
+// Legacy: path, or old when path is not there and old is: the default
+// paths of modemmenu, the old name of dmodem-login, still used by an
+// install from before the rename
+func Legacy(path, old string) string {
+	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
+		if _, err := os.Stat(old); err == nil {
+			return old
+		}
+	}
+	return path
 }

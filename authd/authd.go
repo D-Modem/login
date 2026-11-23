@@ -1,8 +1,8 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package authd is modemmenu's auth socket ([authd] in modemmenu.conf),
-// for the programs that ask it: modemmenu's backends (its users file,
+// Package authd is dmodem-login's auth socket ([authd] in dmodem-login.conf),
+// for the programs that ask it: dmodem-login's backends (its users file,
 // LDAP, SQL, the system's accounts by PAM) answer whether a password is a
 // user's, so that a BBS's other logins (telnet, SSH, the web) take the
 // same one as the dial-up line.  One request a connection, a JSON line
@@ -18,12 +18,12 @@ type Request struct {
 	Password string `json:"password"`
 }
 
-// Reply is modemmenu's answer.
+// Reply is dmodem-login's answer.
 type Reply struct {
 	OK    bool   `json:"ok"`
 	Auth  string `json:"auth,omitempty"`  // the backend that took it
 	Error string `json:"error,omitempty"` // denied, refused, bad request
 }
 
-// MaxRequest is the longest request line modemmenu reads.
+// MaxRequest is the longest request line dmodem-login reads.
 const MaxRequest = 4096

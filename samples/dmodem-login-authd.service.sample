@@ -1,0 +1,18 @@
+# /etc/systemd/system/dmodem-login-authd.service - dmodem-login's auth socket
+# alone ([authd]), for the BBS's other logins, where dmodem-login runs from
+# app_dmodem a call at a time and not as -serve (which answers it too)
+[Unit]
+Description=dmodem-login: the auth socket for the BBS
+Before=bbs.service
+
+[Service]
+ExecStart=/usr/local/bin/dmodem-login -config /etc/asterisk/dmodem-login.conf -authd
+RuntimeDirectory=dmodem-login
+RuntimeDirectoryMode=0755
+Restart=on-failure
+# root for auth = system (PAM's pam_unix); otherwise a user of its own
+# that can read dmodem-login.conf and the users file
+User=root
+
+[Install]
+WantedBy=multi-user.target

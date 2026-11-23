@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 // TestFileChangePassword: the users file's line of the user changed,
@@ -98,12 +98,12 @@ func TestSQLChangePassword(t *testing.T) {
 	}
 }
 
-// MODEMMENU_TEST_LDAP (see ldap_test.go), the server letting users write
+// DMODEM_LOGIN_TEST_LDAP (see ldap_test.go), the server letting users write
 // their own userPassword: lduser's password changed and back
 func TestLDAPChangePassword(t *testing.T) {
-	url := os.Getenv("MODEMMENU_TEST_LDAP")
+	url := os.Getenv("DMODEM_LOGIN_TEST_LDAP")
 	if url == "" {
-		t.Skip("MODEMMENU_TEST_LDAP is not set")
+		t.Skip("DMODEM_LOGIN_TEST_LDAP is not set")
 	}
 	a, err := NewLDAP(&config.Section{Name: "ldap", Vals: map[string]string{
 		"url": url, "search_base": "ou=people,dc=example,dc=com"}})

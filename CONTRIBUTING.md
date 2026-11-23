@@ -8,7 +8,7 @@ English. Follow [docs/STYLE.md](docs/STYLE.md).
 
 ## The contributor agreement
 
-modemmenu is offered under the AGPL-3.0 and, by the D-Modem Authors, under
+dmodem-login is offered under the AGPL-3.0 and, by the D-Modem Authors, under
 commercial licenses ([COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)).
 For contributions to be part of both, each one comes with this
 agreement.  By submitting a contribution (a pull request, a patch or

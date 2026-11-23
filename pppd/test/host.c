@@ -2,13 +2,13 @@
  * Copyright (C) 2026 D-Modem Authors
  * SPDX-License-Identifier: AGPL-3.0-only
  *
- * host.c - pppd's side of the plugin interface, for testing modemmenu.so
+ * host.c - pppd's side of the plugin interface, for testing dmodem-login.so
  * where pppd cannot run (no PPP in the kernel): it exports what pppd
  * exports to plugins (the hooks, maxconnect, add_options and the log
  * functions, unversioned, as pppd does), loads the plugin and logs in
  * with PAP as pppd would.
  *
- *   host modemmenu.so user password [socket]
+ *   host dmodem-login.so user password [socket]
  *
  * prints "auth=N maxconnect=N address=N" (and the plugin's log lines).
  */
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	int r;
 
 	if (argc < 4) {
-		fprintf(stderr, "host modemmenu.so user password [socket]\n");
+		fprintf(stderr, "host dmodem-login.so user password [socket]\n");
 		return 2;
 	}
 	h = dlopen(argv[1], RTLD_NOW | RTLD_GLOBAL);
@@ -70,9 +70,9 @@ int main(int argc, char **argv)
 	}
 	init();
 	if (argc > 4) {
-		/* the modemmenu-socket option, as pppd sets an o_string */
+		/* the dmodem-login-socket option, as pppd sets an o_string */
 		for (option_t *o = opts; o && o->name; o++)
-			if (!strcmp(o->name, "modemmenu-socket"))
+			if (!strcmp(o->name, "dmodem-login-socket"))
 				*(char **)o->addr = argv[4];
 	}
 	if (!pap_check_hook || !pap_check_hook()) {

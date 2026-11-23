@@ -1,4 +1,4 @@
-module github.com/D-Modem/menu
+module github.com/D-Modem/login
 
 go 1.22
 
