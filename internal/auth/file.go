@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 // File: a text file of user:password lines (the password hashed as
@@ -24,7 +24,7 @@ type File struct {
 // NewFile: the [file] backend, its users file checked to exist
 func NewFile(s *config.Section) (Authenticator, error) {
 	a := &File{
-		path:   s.Get("path", "/etc/asterisk/modemmenu.users"),
+		path:   s.Get("path", config.Legacy("/etc/asterisk/dmodem-login.users", "/etc/asterisk/modemmenu.users")),
 		scheme: strings.ToLower(s.Get("hash", "auto")),
 	}
 	if _, err := os.Stat(a.path); err != nil {

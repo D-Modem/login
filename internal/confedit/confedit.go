@@ -1,7 +1,7 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package confedit changes modemmenu.conf as a sysop would in an editor:
+// Package confedit changes dmodem-login.conf as a sysop would in an editor:
 // a key's value on its own line (its comment after it kept), a new key
 // after the last of its section, a new section at the end.  The comments,
 // the blank lines and the order of everything else stay as they are.
@@ -10,7 +10,7 @@ package confedit
 import (
 	"strings"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 // Doc is a configuration file's lines.

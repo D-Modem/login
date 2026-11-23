@@ -1,6 +1,6 @@
-/modemmenu
+/dmodem-login
 pbx-modem
-/menu
+/modemmenu
 *.so
 # the site (brand's tools/site.sh)
 /.site/

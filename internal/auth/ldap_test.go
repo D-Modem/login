@@ -9,16 +9,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 	"github.com/go-ldap/ldap/v3"
 )
 
-// MODEMMENU_TEST_LDAP=ldap://host:port of a server with
+// DMODEM_LOGIN_TEST_LDAP=ldap://host:port of a server with
 // uid=lduser,ou=people,dc=example,dc=com, password ldpass
 func TestLDAP(t *testing.T) {
-	url := os.Getenv("MODEMMENU_TEST_LDAP")
+	url := os.Getenv("DMODEM_LOGIN_TEST_LDAP")
 	if url == "" {
-		t.Skip("MODEMMENU_TEST_LDAP is not set")
+		t.Skip("DMODEM_LOGIN_TEST_LDAP is not set")
 	}
 	for _, vals := range []map[string]string{
 		{"url": url, "search_base": "ou=people,dc=example,dc=com"},
@@ -61,13 +61,13 @@ func TestADPassword(t *testing.T) {
 	}
 }
 
-// MODEMMENU_TEST_LDAP, with ou=groups,dc=example,dc=com holding
+// DMODEM_LOGIN_TEST_LDAP, with ou=groups,dc=example,dc=com holding
 // cn=sysops (groupOfNames, member lduser) and cn=dialup (posixGroup,
 // memberUid lduser) and cn=other (without lduser)
 func TestLDAPGroups(t *testing.T) {
-	url := os.Getenv("MODEMMENU_TEST_LDAP")
+	url := os.Getenv("DMODEM_LOGIN_TEST_LDAP")
 	if url == "" {
-		t.Skip("MODEMMENU_TEST_LDAP is not set")
+		t.Skip("DMODEM_LOGIN_TEST_LDAP is not set")
 	}
 	for _, vals := range []map[string]string{
 		{"url": url, "search_base": "ou=people,dc=example,dc=com", "group_base": "ou=groups,dc=example,dc=com"},

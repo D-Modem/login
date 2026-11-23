@@ -15,11 +15,11 @@ import (
 // Client asks the socket at Socket.
 type Client struct {
 	Socket  string
-	Timeout time.Duration // for an answer (modemmenu waits fail_delay before a no); 0: 15s
+	Timeout time.Duration // for an answer (dmodem-login waits fail_delay before a no); 0: 15s
 }
 
 // Check asks whether pw is user's password: true and the backend that
-// said so, false if it is not; an error if modemmenu could not be asked
+// said so, false if it is not; an error if dmodem-login could not be asked
 // or would not answer (refused: not a client it answers).
 func (c *Client) Check(user, pw string) (bool, string, error) {
 	timeout := c.Timeout

@@ -1,15 +1,15 @@
 INHERIT: .site/mkdocs-base.yml
-# modemmenu's site, https://d-modem.github.io/menu/: docs/ and the README
+# dmodem-login's site, https://d-modem.github.io/login/: docs/ and the README
 # with brand's shared theme and workflow (brand's docs/sites.md).
-# docs/reference.md is made from samples/modemmenu.conf.sample (go run ./tools/confref).
-site_name: D-Modem menu
-site_description: modemmenu, the login and menu dial-up callers reach
-site_url: https://d-modem.github.io/menu/
-repo_url: https://github.com/D-Modem/menu
-repo_name: D-Modem/menu
+# docs/reference.md is made from samples/dmodem-login.conf.sample (go run ./tools/confref).
+site_name: D-Modem login
+site_description: dmodem-login, the login and menu dial-up callers reach
+site_url: https://d-modem.github.io/login/
+repo_url: https://github.com/D-Modem/login
+repo_name: D-Modem/login
 docs_dir: .site/docs
 extra:
-  repo: menu
+  repo: login
 nav:
   - Home: index.md
   - Running: running.md
@@ -24,4 +24,5 @@ nav:
   - AOL callers: aol.md
   - Security: security.md
   - Testing: testing.md
+  - Rename from modemmenu: rename.md
   - Documentation index: README.md

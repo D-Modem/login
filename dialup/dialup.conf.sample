@@ -1,8 +1,8 @@
-# /etc/modemmenu/dialup.conf: the dial-up callers' network, read by
-# modemmenu-dialup (at boot, by modemmenu-dialup.service) and by pppd's
+# /etc/dmodem-login/dialup.conf: the dial-up callers' network, read by
+# dmodem-login-dialup (at boot, by dmodem-login-dialup.service) and by pppd's
 # ip-up.d/ip-down.d hooks.  Shell syntax.
 #
-# Callers get addresses from modemmenu's [ppp_pool] in SUBNET, in a
+# Callers get addresses from dmodem-login's [ppp_pool] in SUBNET, in a
 # routing table of their own (a VRF), so that the host's own networks are
 # not theirs: they reach the host's services on SERVER_ADDR (the ports
 # below), the internet through EGRESS, and of the host's LANs only what
@@ -48,7 +48,7 @@ BLOCK_CIDRS="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 100.64.0.0/10 169.254.0.0/1
 INTERNET=yes
 
 # the host's services callers may use on SERVER_ADDR: DNS (the resolver
-# of modemmenu-dns.service), telnet, HTTP(S), MSN 1863, Yahoo 5050,
+# of dmodem-login-dns.service), telnet, HTTP(S), MSN 1863, Yahoo 5050,
 # OSCAR/AOL 5190.  The host's other ports are closed to them.
 HOST_TCP_PORTS="53 23 80 443 1863 5050 5190"
 HOST_UDP_PORTS="53"

@@ -5,14 +5,14 @@
 
 - It checks the password schemes, the file and SQLite backends, the
   menu choices and the telnet client.
-- It runs modemmenu on a pty, as app_dmodem does. On the pty, it tests
+- It runs dmodem-login on a pty, as app_dmodem does. On the pty, it tests
   these items: a wrong login and a correct login, the message of the
   day, choices by key, by name and by alias, an unknown choice and `?`,
   an rlogin BBS and the return to the menu, a cooked shell, and the
   environment and session file of an exec selection.
-- It runs `modemmenu -serve` on a unix socket. It tests these items: a
+- It runs `dmodem-login -serve` on a unix socket. It tests these items: a
   session from an app_dmodem header (on a different pty), a caller who
-  hangs up, a transfer of a logged-in caller from a different modemmenu
+  hangs up, a transfer of a logged-in caller from a different dmodem-login
   through a `mode = unix` item, and `SIGTERM`.
 - It tests drop files line by line in all three formats. The tests
   include the defaults of Synchronet, the other settings, the 31-line
@@ -22,20 +22,20 @@
 - Calls test which items each caller can see (users, groups,
   `min_baud`, caller ID). Calls also test a guest, signups (logged in
   immediately, and pending), refused numbers and known numbers. They
-  also test a selection that modemmenu hangs up at the daily limit, and
-  the next call of that day, which modemmenu refuses.
+  also test a selection that dmodem-login hangs up at the daily limit, and
+  the next call of that day, which dmodem-login refuses.
 - It tests password changes in the users file and in SQLite. In the
   users file, the other lines and notes must stay. On a call, it tests a
   wrong current password, the rules for the new password, the change,
   the next login with the new password, and a guest.
 - It tests the auth socket: correct and wrong passwords, unknown,
   malformed and locked users, `allow_users` and its settings.
-- It tests AutoPPP with the real `modemmenu.so`. A stand-in for pppd
+- It tests AutoPPP with the real `dmodem-login.so`. A stand-in for pppd
   loads the plugin ([pppd/test/host.c](../pppd/test/host.c)). The
   stand-in exports the same items that pppd exports to plugins. This
   test must have a C compiler and `ppp-dev`. The test examines these
   items:
-  - PPP frames, which modemmenu must tell apart from names.
+  - PPP frames, which dmodem-login must tell apart from names.
   - Correct and wrong PAP logins.
   - `maxconnect` from the time limit.
   - The access item, `attempts`, and one login for each call.
@@ -59,11 +59,11 @@
 
 Two more tests run if you give them their servers:
 
-- `MODEMMENU_TEST_PAM=user:password make test`, as root with
-  `/etc/pam.d/modemmenu`: this tests PAM against a real account. It
+- `DMODEM_LOGIN_TEST_PAM=user:password make test`, as root with
+  `/etc/pam.d/dmodem-login`: this tests PAM against a real account. It
   changes the password of the account and then changes it back. The
   service must have a password stack.
-- `MODEMMENU_TEST_LDAP=ldap://host:port make test`: this tests the LDAP
+- `DMODEM_LOGIN_TEST_LDAP=ldap://host:port make test`: this tests the LDAP
   backend against a server that has
   `uid=lduser,ou=people,dc=example,dc=com` (password `ldpass`). It
   changes that password and then changes it back. The server must let

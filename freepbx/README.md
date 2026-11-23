@@ -1,19 +1,19 @@
-# modemmenu on FreePBX
+# dmodem-login on FreePBX
 
 This is a configuration for [FreePBX](https://www.freepbx.org/) 16 and
 17 that is ready to use. Callers dial in, and their modem connects to
-[D-Modem](https://github.com/D-Modem/D-Modem). Then modemmenu asks for a
+[D-Modem](https://github.com/D-Modem/D-Modem). Then dmodem-login asks for a
 user name and a password and checks them against a text file. Then it
 shows its menu.
 
 | file | goes to | |
 |---|---|---|
-| [modemmenu.conf](modemmenu.conf) | `/etc/modemmenu/modemmenu.conf` | the login and the menu |
-| [modemmenu.users](modemmenu.users) | `/etc/modemmenu/modemmenu.users` | the names and passwords of the callers |
-| [modemmenu.service](modemmenu.service) | `/etc/systemd/system/modemmenu.service` | runs modemmenu for all calls |
+| [dmodem-login.conf](dmodem-login.conf) | `/etc/dmodem-login/dmodem-login.conf` | the login and the menu |
+| [dmodem-login.users](dmodem-login.users) | `/etc/dmodem-login/dmodem-login.users` | the names and passwords of the callers |
+| [dmodem-login.service](dmodem-login.service) | `/etc/systemd/system/dmodem-login.service` | runs dmodem-login for all calls |
 | [extensions_custom.conf](extensions_custom.conf) | add to `/etc/asterisk/extensions_custom.conf` | an optional test extension |
 
-The files are in `/etc/modemmenu`, not in `/etc/asterisk`. Thus the
+The files are in `/etc/dmodem-login`, not in `/etc/asterisk`. Thus the
 `fwconsole chown` of FreePBX never gives the asterisk user access to the
 users file.
 
@@ -24,12 +24,12 @@ caller's modem ──SIP──▶ FreePBX inbound route ──▶ D-Modem: menu
                                                    (dmodem-ari or app_dmodem)
                                                          │ unix socket, call details first
                                                          ▼
-                                    modemmenu -serve ──▶ login from modemmenu.users
+                                    dmodem-login -serve ──▶ login from dmodem-login.users
                                                     ──▶ menu: PPP, last callers, password
 ```
 
-One `modemmenu -serve` answers all calls on
-`/run/modemmenu/modemmenu.sock`. The socket belongs to the asterisk
+One `dmodem-login -serve` answers all calls on
+`/run/dmodem-login/dmodem-login.sock`. The socket belongs to the asterisk
 group. Thus Asterisk and dmodem-ari can connect, and other users cannot.
 Each call gets its own session.
 
@@ -40,13 +40,13 @@ dmodem-ari or app_dmodem. Refer to
 [docs/freepbx.md](https://github.com/D-Modem/D-Modem/blob/main/docs/freepbx.md)
 of D-Modem.
 
-1. **Build modemmenu.** It must have Go 1.22 or later. Debian 12
-   (FreePBX 17) has Go 1.19. Thus, build modemmenu on a different
+1. **Build dmodem-login.** It must have Go 1.22 or later. Debian 12
+   (FreePBX 17) has Go 1.19. Thus, build dmodem-login on a different
    machine, or use bookworm-backports. This configuration does not use
    PAM. Thus you can copy a static build to any x86-64 Linux:
 
        CGO_ENABLED=0 make PAM=0
-       scp modemmenu root@freepbx:/usr/local/bin/
+       scp dmodem-login root@freepbx:/usr/local/bin/
 
    Alternatively, on the FreePBX machine, run
    `make PAM=0 install-freepbx`. This command also does steps 2 and 3.
@@ -54,27 +54,27 @@ of D-Modem.
 
 2. **Install the files** (as root):
 
-       install -d -m 755 /etc/modemmenu
-       install -m 644 freepbx/modemmenu.conf    /etc/modemmenu/
-       install -m 600 freepbx/modemmenu.users   /etc/modemmenu/
-       install -m 644 freepbx/modemmenu.service /etc/systemd/system/
+       install -d -m 755 /etc/dmodem-login
+       install -m 644 freepbx/dmodem-login.conf    /etc/dmodem-login/
+       install -m 600 freepbx/dmodem-login.users   /etc/dmodem-login/
+       install -m 644 freepbx/dmodem-login.service /etc/systemd/system/
 
-3. **Add the callers.** `modemmenu -hash` asks for a password and
+3. **Add the callers.** `dmodem-login -hash` asks for a password and
    prints its bcrypt hash. Each caller is a `name:hash` line in
-   `/etc/modemmenu/modemmenu.users`:
+   `/etc/dmodem-login/dmodem-login.users`:
 
-       echo "alice:$(modemmenu -hash)" >> /etc/modemmenu/modemmenu.users
+       echo "alice:$(dmodem-login -hash)" >> /etc/dmodem-login/dmodem-login.users
 
    For a first test, you can use `test:{PLAIN}changeme`. Remove it
-   after the test. modemmenu reads the file at each login. Thus you do
+   after the test. dmodem-login reads the file at each login. Thus you do
    not have to restart after a change.
 
-4. **Check and start modemmenu:**
+4. **Check and start dmodem-login:**
 
-       modemmenu -check -config /etc/modemmenu/modemmenu.conf
+       dmodem-login -check -config /etc/dmodem-login/dmodem-login.conf
        systemctl daemon-reload
-       systemctl enable --now modemmenu
-       ls -l /run/modemmenu/modemmenu.sock    # srw-rw---- root asterisk
+       systemctl enable --now dmodem-login
+       ls -l /run/dmodem-login/dmodem-login.sock    # srw-rw---- root asterisk
 
 5. **Add the D-Modem profile** in **Applications > D-Modem > Profiles**:
 
@@ -82,7 +82,7 @@ of D-Modem.
    |---|---|
    | Name | `menu` |
    | Data goes to | A server on a unix socket |
-   | Socket | `/run/modemmenu/modemmenu.sock` |
+   | Socket | `/run/dmodem-login/dmodem-login.sock` |
    | Call details first | on |
 
    Keep the default values for the other fields. This step writes a
@@ -113,7 +113,7 @@ problems that remain.
   internet and to keep callers away from your LAN, run
   `make install-dialup` ([the dial-up network](../docs/dialup-network.md)).
   Dial-Up Networking of Windows logs in with PAP, not at the prompt. For
-  Windows, enable `[autoppp]` and install the `modemmenu.so` plugin of
+  Windows, enable `[autoppp]` and install the `dmodem-login.so` plugin of
   pppd. If `ppp-dev` is installed, `make` builds the plugin.
 - **Last callers**, and **Change your password**. **Change your
   password** writes the line of the caller in the users file again.
@@ -130,12 +130,12 @@ adds a locked line to the users file. To unlock the line, remove its
 
 ## When it does not work
 
-- `journalctl -t modemmenu` shows each call, login and selection.
+- `journalctl -t dmodem-login` shows each call, login and selection.
 - If you see "The lines are busy", or if there is no menu: make sure
-  that `modemmenu.service` runs, and that the group of the socket is
+  that `dmodem-login.service` runs, and that the group of the socket is
   `asterisk`. Asterisk must be in that group (on FreePBX, it is).
 - If the screen shows no rate or caller ID: enable **Call details
   first** in the profile.
-- With dmodem-ari, the dialed number that modemmenu sees is the name of
+- With dmodem-ari, the dialed number that dmodem-login sees is the name of
   the profile (`menu`), not the DID. The cause is that FreePBX gets to
   it through the `app-dmodem` context.

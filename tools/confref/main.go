@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 // Command confref writes docs/reference.md, the configuration reference:
-// every section and key of modemmenu.conf, with the help, the sample's
+// every section and key of dmodem-login.conf, with the help, the sample's
 // value and the other values the sample shows, all read from the comments
-// of samples/modemmenu.conf.sample.  From the repository's root:
+// of samples/dmodem-login.conf.sample.  From the repository's root:
 //
 //	go run ./tools/confref
 //
-// TestSampleHasEveryKey (cmd/modemmenu/reference_test.go) keeps the sample complete: a key
+// TestSampleHasEveryKey (cmd/dmodem-login/reference_test.go) keeps the sample complete: a key
 // the code reads that the sample doesn't show fails it.
 package main
 
@@ -18,7 +18,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/D-Modem/menu/internal/confdoc"
+	"github.com/D-Modem/login/internal/confdoc"
 )
 
 type kind = confdoc.Kind
@@ -58,12 +58,12 @@ func prose(s string) string {
 
 func reference(kinds []*kind) string {
 	var b strings.Builder
-	b.WriteString(`<!-- Made by go run ./tools/confref from samples/modemmenu.conf.sample: edit the sample, not this page. -->
+	b.WriteString(`<!-- Made by go run ./tools/confref from samples/dmodem-login.conf.sample: edit the sample, not this page. -->
 
 # Configuration reference
 
-Every section and key of modemmenu.conf, from the comments in
-[modemmenu.conf.sample](https://github.com/D-Modem/menu/blob/main/samples/modemmenu.conf.sample).
+Every section and key of dmodem-login.conf, from the comments in
+[dmodem-login.conf.sample](https://github.com/D-Modem/login/blob/main/samples/dmodem-login.conf.sample).
 **Sample** is the value the sample sets (or shows, commented out);
 [Configuration](configuration.md) explains the file and its sections in
 full.
@@ -117,7 +117,7 @@ full.
 }
 
 func main() {
-	sample, err := os.ReadFile("samples/modemmenu.conf.sample")
+	sample, err := os.ReadFile("samples/dmodem-login.conf.sample")
 	if err != nil {
 		log.Fatal(err)
 	}

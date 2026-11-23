@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 const sample = `; the file's comment
@@ -37,7 +37,7 @@ key = S
 // keys after their section's last, new sections at the end
 func TestSet(t *testing.T) {
 	d := Parse(sample)
-	d.Set("general", "log", "/var/log/modemmenu.log")
+	d.Set("general", "log", "/var/log/dmodem-login.log")
 	d.Set("general", "banner", "Hello")
 	d.Set("general", "attempts", "5")
 	d.Set("general", "motd", " spaced ")
@@ -48,7 +48,7 @@ func TestSet(t *testing.T) {
 
 [general]
 ; the log
-log = /var/log/modemmenu.log ; or a file
+log = /var/log/dmodem-login.log ; or a file
 banner = "Hello"
 attempts=5
 motd = " spaced "
@@ -81,7 +81,7 @@ enabled = yes
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, kv := range [][3]string{{"general", "log", "/var/log/modemmenu.log"}, {"general", "motd", " spaced "},
+	for _, kv := range [][3]string{{"general", "log", "/var/log/dmodem-login.log"}, {"general", "motd", " spaced "},
 		{"general", "banner", "Hello"}, {"item bbs", "help", "a; b"}, {"aol", "enabled", "yes"}} {
 		if v := c.Section(kv[0]).Get(kv[1], "?"); v != kv[2] {
 			t.Errorf("[%s] %s = %q, want %q", kv[0], kv[1], v, kv[2])

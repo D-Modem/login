@@ -1,10 +1,10 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package confdoc reads what samples/modemmenu.conf.sample says of each
+// Package confdoc reads what samples/dmodem-login.conf.sample says of each
 // section and key in its comments: the help, the sample's value and the
 // other values it shows.  tools/confref makes the configuration reference
-// of it, and modemmenu -setup the help of its screens.
+// of it, and dmodem-login -setup the help of its screens.
 package confdoc
 
 import (

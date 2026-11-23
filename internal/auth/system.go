@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 // System: the accounts of the system, by PAM: the auth and account
@@ -33,11 +33,11 @@ type Account struct {
 }
 
 // NewSystem: the [system] backend (PAM and the name service);
-// an error when this modemmenu is built without PAM
+// an error when this dmodem-login is built without PAM
 func NewSystem(s *config.Section) (Authenticator, error) {
 	var err error
 	a := &System{
-		service:  s.Get("pam_service", "modemmenu"),
+		service:  s.Get("pam_service", pamService()),
 		groups:   config.Fields(s.Get("groups", "")),
 		lookup:   LookupNSS,
 		inGroups: InGroupsNSS,
@@ -50,7 +50,7 @@ func NewSystem(s *config.Section) (Authenticator, error) {
 		return nil, err
 	}
 	if !havePAM {
-		return nil, fmt.Errorf("[general] auth = system: this modemmenu is built without PAM (make with libpam's headers, or go build -tags pam)")
+		return nil, fmt.Errorf("[general] auth = system: this dmodem-login is built without PAM (make with libpam's headers, or go build -tags pam)")
 	}
 	return a, nil
 }
@@ -91,4 +91,13 @@ func (a *System) allowed(acct *Account) error {
 		return fmt.Errorf("%w: %s is in none of %s", ErrNoUser, acct.name, strings.Join(a.groups, ", "))
 	}
 	return nil
+}
+
+// pamService: dmodem-login, or modemmenu (the old name) when only its
+// /etc/pam.d file is there
+func pamService() string {
+	if config.Legacy("/etc/pam.d/dmodem-login", "/etc/pam.d/modemmenu") == "/etc/pam.d/modemmenu" {
+		return "modemmenu"
+	}
+	return "dmodem-login"
 }

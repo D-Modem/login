@@ -1,7 +1,7 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package auth checks a user's password with modemmenu's backends (a
+// Package auth checks a user's password with dmodem-login's backends (a
 // users file, LDAP, SQL, the system's accounts by PAM), in turn, and
 // changes it in the backend that holds the account.
 package auth

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// serve answers as modemmenu's [authd] would: alice/secret, then a
+// serve answers as dmodem-login's [authd] would: alice/secret, then a
 // refusal for "eve", and silence for "slow".
 func serve(t *testing.T) string {
 	sock := filepath.Join(t.TempDir(), "auth.sock")

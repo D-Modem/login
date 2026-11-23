@@ -1,6 +1,6 @@
 # The sysop's setup
 
-`modemmenu -setup` changes `modemmenu.conf` on a full screen. It looks
+`dmodem-login -setup` changes `dmodem-login.conf` on a full screen. It looks
 like the setup programs of BBSs from the 1990s:
 
 - A menu bar with pull-down menus, on a blue desktop.
@@ -9,10 +9,10 @@ like the setup programs of BBSs from the 1990s:
 - A box below the windows, with the help for the line under the bar.
 - A bar at the bottom of the screen, which shows the keys.
 
-![The full-screen menu and the setup](https://raw.githubusercontent.com/D-Modem/menu/main/.github/screens.png)
+![The full-screen menu and the setup](https://raw.githubusercontent.com/D-Modem/login/main/.github/screens.png)
 
 ```
-modemmenu -setup -config /etc/asterisk/modemmenu.conf
+dmodem-login -setup -config /etc/asterisk/dmodem-login.conf
 ```
 
 - The first window shows all sections, under Login, Users, Menu,
@@ -60,7 +60,7 @@ completes the list:
 | `[item] groups`, `[system] groups` | the groups in `[groups]` with their members, and the groups of the system |
 | `[item] run_as`, `[authd] allow_users` | `{user}`, and the login accounts of the system |
 | `[item] dropfile` | door32.sys, door.sys, dorinfo1.def, dorinfo#.def |
-| `[item] path` | the sockets in /run/modemmenu and /run/bbs |
+| `[item] path` | the sockets in /run/dmodem-login and /run/bbs |
 | `[autoppp] item`, `[number] item` | the items of the menu |
 | `[server]`/`[authd] listen` | the usual socket, marked "taken by" if the other section uses it |
 | `socket_group`, `socket_mode` | the groups of the system, and 0660, 0600, 0666 |
@@ -79,7 +79,7 @@ completes the list:
   are the same as the notes in the [reference](reference.md).
 
 Before the setup saves the file, it checks the file, as
-`modemmenu -check` does. If the check fails, the setup saves the file
+`dmodem-login -check` does. If the check fails, the setup saves the file
 only when you ask again ("Save anyway").
 
 The file keeps its comments, blank lines and sequence:
@@ -92,7 +92,7 @@ The file keeps its comments, blank lines and sequence:
 The setup writes the new file next to the old file. Then it renames the
 new file to the name of the old file, and keeps the mode and the owner.
 Each call reads the file again, thus the next call gets the changes.
-modemmenu reads `[server]` when `modemmenu -serve` starts.
+dmodem-login reads `[server]` when `dmodem-login -serve` starts.
 
 If there is no file, the setup starts from the sample and saves the
 result at the path of the file.
@@ -110,16 +110,16 @@ mode = setup
 groups = sysops
 ```
 
-The item must have `users` or `groups`. modemmenu refuses the item
+The item must have `users` or `groups`. dmodem-login refuses the item
 without them. A guest can never get this item. The item must have an
 ANSI terminal of a minimum of 40x14 (80x24 is better). On other
-terminals, modemmenu tells the caller that the terminal is not
+terminals, dmodem-login tells the caller that the terminal is not
 applicable.
 
 The idle timeout does not apply to the setup. The setup waits for the
 sysop for an unlimited time. But the time limit of the call
 (`time_limit`) applies. When the call ends, changes that you did not save
-are lost. modemmenu writes the file as the user that it runs as. That
+are lost. dmodem-login writes the file as the user that it runs as. That
 user must be able to write the file.
 
 ## Terminals

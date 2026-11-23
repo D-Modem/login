@@ -2,7 +2,7 @@
 
 PPP callers get these items:
 
-- Their own address from the `[ppp_pool]` of modemmenu.
+- Their own address from the `[ppp_pool]` of dmodem-login.
 - A DNS server that answers for the services of this system.
 - Their own network. From this network, they can get to the services of
   the host and to the internet. They cannot get to the LANs of the host,
@@ -12,7 +12,7 @@ The files are in [`dialup/`](../dialup). `make install-dialup` installs
 them.
 
 ```
-caller ── modem ── D-Modem ── modemmenu ── pppd ── ppp0 ┐
+caller ── modem ── D-Modem ── dmodem-login ── pppd ── ppp0 ┐
                                                         │  VRF "dialup" (table 77)
                100.120.224.1: DNS, BBS, front ends ─────┤  100.120.224.0/19
                                                         └─ egress: eth0.77 (VLAN), eth0 (NAT) or none
@@ -28,7 +28,7 @@ range = 100.120.224.10-100.120.255.254
 ```
 
 A PPP command can contain `{ppp_remote}` (or `{ppp_local}`,
-`{ppp_dns}`, `{ppp_dns2}`). For such a command, modemmenu takes the
+`{ppp_dns}`, `{ppp_dns2}`). For such a command, dmodem-login takes the
 first free address of `range` before pppd starts. It releases the
 address when pppd ends:
 
@@ -36,10 +36,10 @@ address when pppd ends:
 command = exec /usr/sbin/pppd nodetach noauth local lock passive {ppp_local}:{ppp_remote} ms-dns {ppp_dns} ms-dns {ppp_dns2} ipparam {user}
 ```
 
-- Each address is a lock file in `state_dir/ppp-pool`. modemmenu holds
+- Each address is a lock file in `state_dir/ppp-pool`. dmodem-login holds
   the lock while pppd runs. The file contains the name of the user and
-  the pid of modemmenu. A modemmenu for each call and all sessions of
-  `modemmenu -serve` share these files. If its modemmenu stops
+  the pid of dmodem-login. A dmodem-login for each call and all sessions of
+  `dmodem-login -serve` share these files. If its dmodem-login stops
   unexpectedly, the address becomes free automatically.
 - PPP gives the addresses (IPCP), not DHCP. `local` is the server end of
   all links. `dns` is the value that `ms-dns` offers (by default,
@@ -47,9 +47,9 @@ command = exec /usr/sbin/pppd nodetach noauth local lock passive {ppp_local}:{pp
   again. Thus the command always has two servers.
 - The scripts of pppd see `MODEM_PPP_LOCAL`, `MODEM_PPP_REMOTE`,
   `MODEM_PPP_DNS` and `MODEM_PPP_DNS2`.
-- If the pool is full, modemmenu refuses the call ("all N PPP addresses
+- If the pool is full, dmodem-login refuses the call ("all N PPP addresses
   are in use").
-- The `[ppp]` profile of D-Modem runs pppd without modemmenu, thus it
+- The `[ppp]` profile of D-Modem runs pppd without dmodem-login, thus it
   has no pool. Give it a fixed pair of addresses outside `range`
   (100.120.224.2 to .9).
 
@@ -61,10 +61,10 @@ Tailscale also gives addresses in 100.64.0.0/10. On a host that runs
 Tailscale, use `tailscale status` to look for a conflict, or select a
 different range.
 
-## Isolation: `modemmenu-dialup`
+## Isolation: `dmodem-login-dialup`
 
-`modemmenu-dialup up` reads `/etc/modemmenu/dialup.conf` and configures
-the items that follow. `modemmenu-dialup.service` runs it at boot.
+`dmodem-login-dialup up` reads `/etc/dmodem-login/dialup.conf` and configures
+the items that follow. `dmodem-login-dialup.service` runs it at boot.
 
 - **A VRF**, `dialup`, with routing table 77. The links of the callers
   are in the VRF. Thus the routes of the host, and its LANs, are not
@@ -83,7 +83,7 @@ the items that follow. `modemmenu-dialup.service` runs it at boot.
     with masquerade. This is simpler, and it has the same filters as the
     VLAN.
   - `none`: no internet. Only the services of the host are available.
-- **A firewall** (nftables table `modemmenu_dialup`) on the links of the
+- **A firewall** (nftables table `dmodem_login_dialup`) on the links of the
   callers:
   - To the host: only `HOST_TCP_PORTS` and `HOST_UDP_PORTS` on
     `SERVER_ADDR`, and ping. By default, the ports are DNS, telnet,
@@ -112,18 +112,18 @@ the items that follow. `modemmenu-dialup.service` runs it at boot.
   Thus the services of the host (which listen in no VRF) answer callers
   on 100.120.224.1.
 
-The `ip-up.d/modemmenu-dialup` script of pppd moves a link into the VRF
+The `ip-up.d/dmodem-login-dialup` script of pppd moves a link into the VRF
 if the local address of the link is `SERVER_ADDR`. Before it moves the
 link, it adds the link to the list of the firewall. The `ip-down.d`
 script removes the name of the link from the list again. The script does
 not change other links of pppd. After you edit `dialup.conf`, run
-`systemctl restart modemmenu-dialup modemmenu-dns`.
-`modemmenu-dialup status` shows the VRF, its routes and the links of the
+`systemctl restart dmodem-login-dialup dmodem-login-dns`.
+`dmodem-login-dialup status` shows the VRF, its routes and the links of the
 callers.
 
-## DNS: `modemmenu-dns`
+## DNS: `dmodem-login-dns`
 
-`modemmenu-dns.service` runs dnsmasq in the VRF, on 100.120.224.1 only,
+`dmodem-login-dns.service` runs dnsmasq in the VRF, on 100.120.224.1 only,
 with [`dnsmasq.conf`](../dialup/dnsmasq.conf). This configuration has:
 
 - No DHCP.
@@ -131,7 +131,7 @@ with [`dnsmasq.conf`](../dialup/dnsmasq.conf). This configuration has:
   VRF.
 - The names of this system under `.dialup` (`bbs.dialup`).
 
-**Overrides** are all `*.conf` files in `/etc/modemmenu/dns.d/`.
+**Overrides** are all `*.conf` files in `/etc/dmodem-login/dns.d/`.
 [`services.conf`](../dialup/dns.d/services.conf) has the names of the
 old services. Each name has a comment mark. Remove the mark when the
 front end of the service is available. The names are for AIM and ICQ
@@ -140,12 +140,12 @@ front end of the service is available. The names are for AIM and ICQ
 other names). Alternatively, a front end can add its own file:
 
 ```
-# /etc/modemmenu/dns.d/oscar.conf
+# /etc/dmodem-login/dns.d/oscar.conf
 address=/login.oscar.aol.com/100.120.224.1
 ```
 
 `address=/name/ip` answers for the name and for all names under it.
-Then run `systemctl reload modemmenu-dns`. The clients of the callers
+Then run `systemctl reload dmodem-login-dns`. The clients of the callers
 connect to our front ends without a change to a hosts file or to the
 registry.
 
@@ -153,12 +153,12 @@ registry.
 
 ```
 apt install ppp dnsmasq-base nftables iproute2
-make install-dialup      # the script, hooks, units, /etc/modemmenu/{dialup.conf,dnsmasq.conf,dns.d/}
-$EDITOR /etc/modemmenu/dialup.conf
-systemctl enable --now modemmenu-dialup modemmenu-dns
+make install-dialup      # the script, hooks, units, /etc/dmodem-login/{dialup.conf,dnsmasq.conf,dns.d/}
+$EDITOR /etc/dmodem-login/dialup.conf
+systemctl enable --now dmodem-login-dialup dmodem-login-dns
 ```
 
-Then add the `[ppp_pool]` above to modemmenu.conf (the samples have
+Then add the `[ppp_pool]` above to dmodem-login.conf (the samples have
 it). Also add the `{ppp_...}` placeholders to the PPP commands.
 
 ## Limits

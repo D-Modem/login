@@ -1,6 +1,6 @@
 # The LDAP provider
 
-modemmenu can be an LDAP server. Other programs can then use the same
+dmodem-login can be an LDAP server. Other programs can then use the same
 user names and passwords as the dial-up line. Examples of these programs
 are the BBS, a wiki, a mail server, a PBX and a VPN.
 
@@ -13,7 +13,7 @@ through LDAP. No entry contains a password or a password hash.
 
 ## Configuration
 
-Add an `[ldapd]` section to `modemmenu.conf`. This example listens on
+Add an `[ldapd]` section to `dmodem-login.conf`. This example listens on
 loopback for local programs, and on all networks with TLS (ldaps):
 
 ```
@@ -21,19 +21,19 @@ loopback for local programs, and on all networks with TLS (ldaps):
 listen = tcp:127.0.0.1:389
 listen_tls = tcp:0.0.0.0:636
 base_dn = dc=example,dc=org
-tls_cert = /etc/modemmenu/ldap.crt
-tls_key = /etc/modemmenu/ldap.key
+tls_cert = /etc/dmodem-login/ldap.crt
+tls_key = /etc/dmodem-login/ldap.key
 ; for programs that search before they bind
 bind_dn = cn=reader,dc=example,dc=org
 bind_password = $2a$10$...
 ```
 
-`modemmenu -serve` answers LDAP requests, and also serves its sessions.
-`modemmenu -ldapd` answers LDAP requests only
-([modemmenu-ldapd.service.sample](../samples/modemmenu-ldapd.service.sample)).
-Use `-ldapd` when `app_dmodem` starts one modemmenu for each call.
+`dmodem-login -serve` answers LDAP requests, and also serves its sessions.
+`dmodem-login -ldapd` answers LDAP requests only
+([dmodem-login-ldapd.service.sample](../samples/dmodem-login-ldapd.service.sample)).
+Use `-ldapd` when `app_dmodem` starts one dmodem-login for each call.
 
-To listen on port 389 or 636, modemmenu must have the
+To listen on port 389 or 636, dmodem-login must have the
 `CAP_NET_BIND_SERVICE` capability, or it must run as root. The sample
 unit gives the capability.
 
@@ -93,7 +93,7 @@ These bind names are correct for a user:
 
 The service account (`bind_dn`) is for programs that search for a user
 before they bind as that user. `bind_password` is a hash, not the
-password. To make the hash, use `modemmenu -hash`.
+password. To make the hash, use `dmodem-login -hash`.
 
 An unauthenticated bind (a name with no password) is refused, as
 RFC 4513 tells. An anonymous bind (no name and no password) is accepted.
@@ -120,8 +120,8 @@ ways:
 
 A client on a unix socket or on loopback does not have to use TLS.
 
-`tls_cert` and `tls_key` are PEM files. modemmenu reads them when it
-starts. The private key must be readable by the user of modemmenu only.
+`tls_cert` and `tls_key` are PEM files. dmodem-login reads them when it
+starts. The private key must be readable by the user of dmodem-login only.
 
 ## Operations
 
@@ -168,7 +168,7 @@ Use these values in the program that uses the LDAP provider:
 
 ## Cautions
 
-- Do not set the `[ldap]` backend of modemmenu to this LDAP provider.
+- Do not set the `[ldap]` backend of dmodem-login to this LDAP provider.
   This makes a loop.
 - The directory shows the user names to all clients that can search.
   If the user names must stay private, set `user_search = no` and do not

@@ -3,29 +3,29 @@
 
 `app_dmodem` is the Asterisk module of
 [D-Modem](https://github.com/D-Modem/D-Modem) (`frontend/asterisk/`).
-It gives the line of the caller to modemmenu in one of two ways:
+It gives the line of the caller to dmodem-login in one of two ways:
 
-- It starts modemmenu for each call (`mode = exec`).
-- It connects each call to one `modemmenu -serve` on a unix socket
+- It starts dmodem-login for each call (`mode = exec`).
+- It connects each call to one `dmodem-login -serve` on a unix socket
   (`mode = unix`, refer to the section below).
 
 ## A program for each call
 
-app_dmodem runs modemmenu as a `mode = exec` program on the line of the
+app_dmodem runs dmodem-login as a `mode = exec` program on the line of the
 caller:
 
 ```
 ; dmodem.conf
 [menu]
 mode = exec
-command = exec /usr/local/bin/modemmenu -config /etc/asterisk/modemmenu.conf
+command = exec /usr/local/bin/dmodem-login -config /etc/asterisk/dmodem-login.conf
 
 ; extensions.conf
 exten => 5551000,1,DModem(menu)
  same => n,Hangup()
 ```
 
-modemmenu reads the details of the call from the environment of
+dmodem-login reads the details of the call from the environment of
 app_dmodem. The details are `DMODEM_RATE` (tx/rx bit/s),
 `DMODEM_CALLERID`, `DMODEM_DIALED`, `DMODEM_CHANNEL`, `DMODEM_PROFILE`
 and `DMODEM_PEER` (the SIP address of the call). For `DMODEM_DIALED`,
@@ -33,25 +33,25 @@ the app_dmodem must be a version that sets it. The `-rate`, `-callerid`
 and `-dialed` options can set these values in place of the environment.
 For example, use them under a getty on a different modem.
 
-The line is raw (the pty of app_dmodem). modemmenu itself echoes and
-edits the text that the caller types. When modemmenu exits, the call
+The line is raw (the pty of app_dmodem). dmodem-login itself echoes and
+edits the text that the caller types. When dmodem-login exits, the call
 hangs up. The same occurs when the selection exits.
 
 ## One server on a unix socket
 
-`modemmenu -serve` listens on `[server] listen` (a unix socket, or
+`dmodem-login -serve` listens on `[server] listen` (a unix socket, or
 `tcp:host:port`). app_dmodem connects each call to it:
 
 ```
 ; dmodem.conf
 [menu]
 mode = unix
-path = /run/modemmenu/modemmenu.sock
+path = /run/dmodem-login/dmodem-login.sock
 header = yes
 
-; modemmenu.conf
+; dmodem-login.conf
 [server]
-listen = /run/modemmenu/modemmenu.sock
+listen = /run/dmodem-login/dmodem-login.sock
 socket_mode = 0660
 socket_group = asterisk
 ```
@@ -71,7 +71,7 @@ sequence:
 details are unknown.
 
 Each connection gets its own session. The session is a new pty with
-modemmenu on it, the same as with `mode = exec`. Thus pppd, shells and
+dmodem-login on it, the same as with `mode = exec`. Thus pppd, shells and
 `^C` operate in the same way. When the caller hangs up, the pty hangs
 up. When the session ends, it closes the connection, and the call hangs
 up.
@@ -116,11 +116,11 @@ back.
 ; dmodem.conf
 [menu]
 mode = unix
-path = /run/modemmenu/modemmenu.sock
+path = /run/dmodem-login/dmodem-login.sock
 header = yes
 handoff = yes
 
-; modemmenu.conf
+; dmodem-login.conf
 [item bbs]
 key = B
 mode = unix
@@ -130,11 +130,11 @@ handoff = yes
 after = menu
 ```
 
-Without `handoff`, or on TCP, modemmenu copies the bytes, as described above.
+Without `handoff`, or on TCP, dmodem-login copies the bytes, as described above.
 
 | `[server]` option | default | |
 |---|---|---|
-| `listen` | `/run/modemmenu/modemmenu.sock` | the path of a unix socket, or `tcp:host:port` |
+| `listen` | `/run/dmodem-login/dmodem-login.sock` | the path of a unix socket, or `tcp:host:port` |
 | `socket_mode` | `0660` | the permissions of the socket: the users that can connect |
 | `socket_group` | | the group of the socket, for example, the group of Asterisk |
 | `header` | `yes` | read the session header first |
@@ -146,8 +146,8 @@ Without `handoff`, or on TCP, modemmenu copies the bytes, as described above.
 removes the socket and stops the server. If a server stopped
 unexpectedly and left an old socket, the new server replaces that socket
 when it starts. It does not replace a socket that is in use.
-[modemmenu.service.sample](../samples/modemmenu.service.sample) runs the
-server under systemd. systemd also makes `/run/modemmenu`. modemmenu
+[dmodem-login.service.sample](../samples/dmodem-login.service.sample) runs the
+server under systemd. systemd also makes `/run/dmodem-login`. dmodem-login
 records each connection in the log, with the pid and uid of its peer.
 
 ## On FreePBX
@@ -157,7 +157,7 @@ for FreePBX 16 and 17 with the FreePBX module of D-Modem. It has these
 parts:
 
 - Logins from a users file.
-- One `modemmenu -serve` under systemd.
+- One `dmodem-login -serve` under systemd.
 - The D-Modem profile and the inbound route that send calls to the
   server.
 

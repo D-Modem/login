@@ -1,9 +1,9 @@
-<!-- Made by go run ./tools/confref from samples/modemmenu.conf.sample: edit the sample, not this page. -->
+<!-- Made by go run ./tools/confref from samples/dmodem-login.conf.sample: edit the sample, not this page. -->
 
 # Configuration reference
 
-Every section and key of modemmenu.conf, from the comments in
-[modemmenu.conf.sample](https://github.com/D-Modem/menu/blob/main/samples/modemmenu.conf.sample).
+Every section and key of dmodem-login.conf, from the comments in
+[dmodem-login.conf.sample](https://github.com/D-Modem/login/blob/main/samples/dmodem-login.conf.sample).
 **Sample** is the value the sample sets (or shows, commented out);
 [Configuration](configuration.md) explains the file and its sections in
 full.
@@ -19,13 +19,13 @@ full.
 | [`[number NAME]`](#number-name) | a number of its own: deny = yes refuses it; user = logs it in as that user without a password (caller ID can be forged: only where the network vouches for it); item = starts that item at once after the login. |
 | [`[file]`](#file) | users in a text file: user:hash, # comments. |
 | [`[ldap]`](#ldap) | LDAP: a bind as the user. |
-| [`[system]`](#system) | system: the accounts of this machine, by PAM: the auth and account stacks of pam_service (modemmenu.pam.sample as /etc/pam.d/modemmenu), so local accounts, sssd, Kerberos, whatever PAM is set up for. |
+| [`[system]`](#system) | system: the accounts of this machine, by PAM: the auth and account stacks of pam_service (dmodem-login.pam.sample as /etc/pam.d/dmodem-login), so local accounts, sssd, Kerberos, whatever PAM is set up for. |
 | [`[sql]`](#sql) | SQL: query gets args (user, password, in that order of placeholders) and returns one column: the stored password, checked as hash says (auto: by its prefix as in [file]; or bcrypt, sha256, sha512, plain). |
-| [`[server]`](#server) | modemmenu -serve: one modemmenu for all calls, on a unix socket (or tcp:host:port). |
+| [`[server]`](#server) | dmodem-login -serve: one dmodem-login for all calls, on a unix socket (or tcp:host:port). |
 | [`[authd]`](#authd) | The auth socket: the BBS's other logins (telnet, SSH, the web) ask the backends above for a user's password through it, so that it is the same one. |
 | [`[ldapd]`](#ldapd) | The LDAP provider: an LDAPv3 server over the backends above, so that other programs (the BBS, a wiki, a mail server, a PBX) use the same user names and passwords. |
 | [`[ppp_pool]`](#ppp_pool) | The PPP callers' addresses: a command that names {ppp_remote} (or {ppp_local}, {ppp_dns}, {ppp_dns2}) takes the first free address of range for the call, so that several lines run PPP at once, and gives it back when pppd ends. |
-| [`[autoppp]`](#autoppp) | AutoPPP: a dialer that starts PPP at once (Windows' Dial-Up Networking, most others) sends a PPP frame where the login prompt wants a name; then command runs on the line instead (pppd), and its modemmenu.so plugin (make builds it with ppp-dev's headers; make install puts it in pppd's plugin directory) asks this call's auth socket for the PAP login: the backends check it as at the prompt, then item's access rules, then the time limits, whose time left becomes pppd's maxconnect. |
+| [`[autoppp]`](#autoppp) | AutoPPP: a dialer that starts PPP at once (Windows' Dial-Up Networking, most others) sends a PPP frame where the login prompt wants a name; then command runs on the line instead (pppd), and its dmodem-login.so plugin (make builds it with ppp-dev's headers; make install puts it in pppd's plugin directory) asks this call's auth socket for the PAP login: the backends check it as at the prompt, then item's access rules, then the time limits, whose time left becomes pppd's maxconnect. |
 | [`[aol]`](#aol) | AOL: the classic AOL client (2.5 to 4.0) dials a network and its CCL script answers the network's prompts before it speaks P3. |
 | [`[dropfile]`](#dropfile) | drop files for doors (an exec item's dropfile =): what they say of the BBS, and how the door reaches the caller. |
 | [`[menu]`](#menu) | The menu: its title, prompt, items and the words that hang up. |
@@ -40,7 +40,7 @@ The login: the log, the backends, what the caller sees, the time limits.
 | `log` | `syslog` | syslog (auth facility), a file, or none. Never the line: stderr is the caller's screen. |
 | `auth` | `file` | the backends, asked in this order: file, ldap, sql, system (PAM). A backend that does not know the user passes to the next; a wrong password stops there. |
 | `banner` | `\r\nWelcome to D-Modem.\r\n` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
-| `banner_file` | `/etc/asterisk/modemmenu.banner` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
+| `banner_file` | `/etc/asterisk/dmodem-login.banner` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
 | `login_prompt` | `\r\nlogin: ` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
 | `password_prompt` | `Password: ` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
 | `connect_message` | `\r\nConnected at {speed}.\r\n` | after the banner, before the login prompt: the connect rate ({speed}: "33600 bit/s", or "50666 bit/s down, 31200 bit/s up"); left out when it is not known; "" for none. |
@@ -57,7 +57,7 @@ The login: the log, the backends, what the caller sees, the time limits.
 | `max_input` | `64` | the longest line the caller may type at a prompt: a user name or a menu choice (a password twice as long) |
 | `time_limit` | `0` | time limits (0: none), from the login: a call, and a user's calls in a day (kept in state_dir/usage). A selection is hung up at the limit. {time_left} (whole minutes) shows what is left, e.g. in [menu] prompt. |
 | `daily_limit` | `0` | time limits (0: none), from the login: a call, and a user's calls in a day (kept in state_dir/usage). A selection is hung up at the limit. {time_left} (whole minutes) shows what is left, e.g. in [menu] prompt. |
-| `state_dir` | `/var/lib/modemmenu` | where the usage, the last callers and the nodes are kept. |
+| `state_dir` | `/var/lib/dmodem-login` | where the usage, the last callers and the nodes are kept. |
 | `time_warning` | `5m 1m` | these long before the limit, the message is written on the line in the middle of a running selection (not one with time_warning = no), once for each: 5m 1m warns at 5 minutes and at 1 minute left; 0: none. {time_left} is in minutes, {seconds_left} in seconds; \a beeps. |
 | `time_warning_message` | `\r\n\r\n*** {time_left} minute(s) left in this call ***\r\n` | these long before the limit, the message is written on the line in the middle of a running selection (not one with time_warning = no), once for each: 5m 1m warns at 5 minutes and at 1 minute left; 0: none. {time_left} is in minutes, {seconds_left} in seconds; \a beeps. |
 
@@ -98,7 +98,7 @@ new accounts: the name at the login prompt starts a signup, which adds user:bcry
 | `name` | `new` | See the section above. |
 | `pending` | `yes` | See the section above. |
 | `min_password` | `8` | See the section above. |
-| `file` | `/etc/asterisk/modemmenu.users` | See the section above. |
+| `file` | `/etc/asterisk/dmodem-login.users` | See the section above. |
 | `message` | `\r\nNew account.  Choose a user name and a password.\r\n` | See the section above. |
 
 ## `[callerid]`
@@ -126,11 +126,11 @@ There may be any number of these, each with its own NAME.
 
 ## `[file]`
 
-users in a text file: user:hash, # comments.  hash: bcrypt ($2b$..., modemmenu -hash makes one), {SHA256}hex, {SHA512}hex, {SSHA256}base64, {SSHA512}base64 or {PLAIN}text (hash = plain: the rest of the line, as is)
+users in a text file: user:hash, # comments.  hash: bcrypt ($2b$..., dmodem-login -hash makes one), {SHA256}hex, {SHA512}hex, {SSHA256}base64, {SSHA512}base64 or {PLAIN}text (hash = plain: the rest of the line, as is)
 
 | key | sample | what it does |
 |---|---|---|
-| `path` | `/etc/asterisk/modemmenu.users` | See the section above. |
+| `path` | `/etc/asterisk/dmodem-login.users` | See the section above. |
 | `hash` | `auto` | See the section above. |
 
 ## `[ldap]`
@@ -155,11 +155,11 @@ LDAP: a bind as the user.  Either bind_dn with {user} in it, or a search for the
 
 ## `[system]`
 
-system: the accounts of this machine, by PAM: the auth and account stacks of pam_service (modemmenu.pam.sample as /etc/pam.d/modemmenu), so local accounts, sssd, Kerberos, whatever PAM is set up for.  Needs a build with PAM (make finds libpam's headers), and root for pam_unix.  Accounts with a uid below min_uid are not let in, nor root unless allow_root; with groups, only their members.
+system: the accounts of this machine, by PAM: the auth and account stacks of pam_service (dmodem-login.pam.sample as /etc/pam.d/dmodem-login), so local accounts, sssd, Kerberos, whatever PAM is set up for.  Needs a build with PAM (make finds libpam's headers), and root for pam_unix.  Accounts with a uid below min_uid are not let in, nor root unless allow_root; with groups, only their members.
 
 | key | sample | what it does |
 |---|---|---|
-| `pam_service` | `modemmenu` | See the section above. |
+| `pam_service` | `dmodem-login` | See the section above. |
 | `min_uid` | `1000` | See the section above. |
 | `allow_root` | `no` | See the section above. |
 | `groups` | `dialup` | See the section above. |
@@ -182,16 +182,16 @@ SQL: query gets args (user, password, in that order of placeholders) and returns
 
 ## `[server]`
 
-modemmenu -serve: one modemmenu for all calls, on a unix socket (or tcp:host:port).  Each connection gets a session of its own on a new pty, as app_dmodem's mode = exec would give it.
+dmodem-login -serve: one dmodem-login for all calls, on a unix socket (or tcp:host:port).  Each connection gets a session of its own on a new pty, as app_dmodem's mode = exec would give it.
 
 | key | sample | what it does |
 |---|---|---|
-| `listen` | `/run/modemmenu/modemmenu.sock` | See the section above. |
+| `listen` | `/run/dmodem-login/dmodem-login.sock` | See the section above. |
 | `socket_mode` | `0660` | the socket's permissions: who may connect (app_dmodem: Asterisk's group) |
 | `socket_group` | `asterisk` | the socket's permissions: who may connect (app_dmodem: Asterisk's group) |
 | `header` | `yes` | the call's details come first on each connection, NAME=value lines and an empty line: app_dmodem's header = yes (DMODEM_*), or a menu item's header = yes (MODEM_*). no: the caller's bytes from the start. A header from app_dmodem's handoff = yes brings the modem's line with it (SCM_RIGHTS): the session runs on that terminal itself, nothing copied. |
 | `header_timeout` | `10` | the call's details come first on each connection, NAME=value lines and an empty line: app_dmodem's header = yes (DMODEM_*), or a menu item's header = yes (MODEM_*). no: the caller's bytes from the start. A header from app_dmodem's handoff = yes brings the modem's line with it (SCM_RIGHTS): the session runs on that terminal itself, nothing copied. |
-| `trust_user` | `no` | yes: a header with MODEM_USER (another modemmenu's item, header = yes) logs the caller in without asking again. Only for a socket that nothing but trusted menus can connect to. |
+| `trust_user` | `no` | yes: a header with MODEM_USER (another dmodem-login's item, header = yes) logs the caller in without asking again. Only for a socket that nothing but trusted menus can connect to. |
 | `max_sessions` | `32` | connections at once; more are told the lines are busy. |
 
 ## `[authd]`
@@ -200,7 +200,7 @@ The auth socket: the BBS's other logins (telnet, SSH, the web) ask the backends 
 
 | key | sample | what it does |
 |---|---|---|
-| `listen` | `/run/modemmenu/auth.sock` | See the section above. |
+| `listen` | `/run/dmodem-login/auth.sock` | See the section above. |
 | `socket_mode` | `0660` | See the section above. |
 | `socket_group` | `bbs` | See the section above. |
 | `allow_users` | `bbs` | See the section above. |
@@ -217,13 +217,13 @@ The LDAP provider: an LDAPv3 server over the backends above, so that other progr
 | `socket_mode` | `0660` | the unix socket's mode and group (listen = a path) |
 | `socket_group` | `bbs` | the unix socket's mode and group (listen = a path) |
 | `base_dn` | `dc=example,dc=org` | the top of the directory. |
-| `tls_cert` | `/etc/modemmenu/ldap.crt` | the certificate and the key, PEM, for listen_tls and StartTLS. |
-| `tls_key` | `/etc/modemmenu/ldap.key` | the certificate and the key, PEM, for listen_tls and StartTLS. |
+| `tls_cert` | `/etc/dmodem-login/ldap.crt` | the certificate and the key, PEM, for listen_tls and StartTLS. |
+| `tls_key` | `/etc/dmodem-login/ldap.key` | the certificate and the key, PEM, for listen_tls and StartTLS. |
 | `require_tls` | `yes` | yes: a bind must use TLS (StartTLS or listen_tls), except on a unix socket or on loopback. |
 | `anonymous_search` | `no` | yes: a client that did not bind can search. The root DSE is always open. |
 | `user_search` | `yes` | yes: a user who did bind can see all users; no: only the user's own entry and the groups. |
-| `bind_dn` | `cn=reader,dc=example,dc=org` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (modemmenu -hash), not the password. The service account can see all entries. |
-| `bind_password` | `$2a$10$...` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (modemmenu -hash), not the password. The service account can see all entries. |
+| `bind_dn` | `cn=reader,dc=example,dc=org` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (dmodem-login -hash), not the password. The service account can see all entries. |
+| `bind_password` | `$2a$10$...` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (dmodem-login -hash), not the password. The service account can see all entries. |
 | `password_modify` | `yes` | yes: users can change their password with Password Modify (RFC 3062), with the old password, in the backend that holds the account. |
 | `min_password` | `8` | the shortest new password. |
 | `max_clients` | `64` | connections at once. |
@@ -232,7 +232,7 @@ The LDAP provider: an LDAPv3 server over the backends above, so that other progr
 
 ## `[ppp_pool]`
 
-The PPP callers' addresses: a command that names {ppp_remote} (or {ppp_local}, {ppp_dns}, {ppp_dns2}) takes the first free address of range for the call, so that several lines run PPP at once, and gives it back when pppd ends.  They are lock files in state_dir/ppp-pool (each with who has it), shared by every modemmenu on the host.  local is the server's end of every link; dns, the DNS servers offered (ms-dns), local by default (the resolver of dialup/: docs/dialup-network.md).  Pick a subnet none of the host's networks use.  No range: no pool.  The scripts see MODEM_PPP_LOCAL, MODEM_PPP_REMOTE, MODEM_PPP_DNS and MODEM_PPP_DNS2.
+The PPP callers' addresses: a command that names {ppp_remote} (or {ppp_local}, {ppp_dns}, {ppp_dns2}) takes the first free address of range for the call, so that several lines run PPP at once, and gives it back when pppd ends.  They are lock files in state_dir/ppp-pool (each with who has it), shared by every dmodem-login on the host.  local is the server's end of every link; dns, the DNS servers offered (ms-dns), local by default (the resolver of dialup/: docs/dialup-network.md).  Pick a subnet none of the host's networks use.  No range: no pool.  The scripts see MODEM_PPP_LOCAL, MODEM_PPP_REMOTE, MODEM_PPP_DNS and MODEM_PPP_DNS2.
 
 | key | sample | what it does |
 |---|---|---|
@@ -242,17 +242,17 @@ The PPP callers' addresses: a command that names {ppp_remote} (or {ppp_local}, {
 
 ## `[autoppp]`
 
-AutoPPP: a dialer that starts PPP at once (Windows' Dial-Up Networking, most others) sends a PPP frame where the login prompt wants a name; then command runs on the line instead (pppd), and its modemmenu.so plugin (make builds it with ppp-dev's headers; make install puts it in pppd's plugin directory) asks this call's auth socket for the PAP login: the backends check it as at the prompt, then item's access rules, then the time limits, whose time left becomes pppd's maxconnect.  PAP only: CHAP needs the passwords kept where they can be read back.  Fix the addresses (local:remote, from [ppp_pool]): the plugin lets the peer have the one pppd gives it.
+AutoPPP: a dialer that starts PPP at once (Windows' Dial-Up Networking, most others) sends a PPP frame where the login prompt wants a name; then command runs on the line instead (pppd), and its dmodem-login.so plugin (make builds it with ppp-dev's headers; make install puts it in pppd's plugin directory) asks this call's auth socket for the PAP login: the backends check it as at the prompt, then item's access rules, then the time limits, whose time left becomes pppd's maxconnect.  PAP only: CHAP needs the passwords kept where they can be read back.  Fix the addresses (local:remote, from [ppp_pool]): the plugin lets the peer have the one pppd gives it.
 
 | key | sample | what it does |
 |---|---|---|
 | `enabled` | `no` | See the section above. |
-| `command` | `exec /usr/sbin/pppd nodetach lock passive local {ppp_local}:{ppp_remote} ms-dns {ppp_dns} ms-dns {ppp_dns2} require-pap refuse-chap refuse-mschap refuse-mschap-v2 refuse-eap plugin modemmenu.so ipparam autoppp` | See the section above. |
+| `command` | `exec /usr/sbin/pppd nodetach lock passive local {ppp_local}:{ppp_remote} ms-dns {ppp_dns} ms-dns {ppp_dns2} require-pap refuse-chap refuse-mschap refuse-mschap-v2 refuse-eap plugin dmodem-login.so ipparam autoppp` | See the section above. |
 | `item` | `ppp` | the access rules (groups, min_baud, callerids...) a PPP login must pass. |
 
 ## `[aol]`
 
-AOL: the classic AOL client (2.5 to 4.0) dials a network and its CCL script answers the network's prompts before it speaks P3.  modemmenu plays the network (AOLnet, SprintNet, Tymnet, as AOL 3.0's scripts wait for them), then joins the line to host: the BBS's AOL front end, where the caller signs on with their BBS account.  AOLnet needs its greeting (aolnet_prompt) said before the first login prompt, which every caller sees; and the name "aol" (AOLnet's answer) and "@D" (SprintNet's) are then the client's, not a user's.
+AOL: the classic AOL client (2.5 to 4.0) dials a network and its CCL script answers the network's prompts before it speaks P3.  dmodem-login plays the network (AOLnet, SprintNet, Tymnet, as AOL 3.0's scripts wait for them), then joins the line to host: the BBS's AOL front end, where the caller signs on with their BBS account.  AOLnet needs its greeting (aolnet_prompt) said before the first login prompt, which every caller sees; and the name "aol" (AOLnet's answer) and "@D" (SprintNet's) are then the client's, not a user's.
 
 | key | sample | what it does |
 |---|---|---|
@@ -268,7 +268,7 @@ drop files for doors (an exec item's dropfile =): what they say of the BBS, and 
 
 | key | sample | what it does |
 |---|---|---|
-| `bbs_name` | `modemmenu` | See the section above. |
+| `bbs_name` | `dmodem-login` | See the section above. |
 | `sysop` | `Sysop` | See the section above. |
 | `security` | `10` | the callers' security level (an item's security = overrides it) |
 | `emulation` | `auto` | auto (ASCII for a terminal detected without ANSI: VT52, PETSCII, a plain one; ANSI otherwise), ansi or ascii. |
@@ -305,15 +305,15 @@ There may be any number of these, each with its own NAME.
 | `aliases` | `...` | more words that select it (its name always does) Also: `dialup net`. |
 | `label` | `...` | its line in the menu. Also: `Bulletin board`, `PPP (dial-up networking)`, `Change your password`, `Shell`, `More services`, `The BBS`, `Legend of the Red Dragon`, `Last callers`, `Setup`, `Upload a file (ZMODEM)`, `Kermit file server`, `The web (lynx)`, `Mail`, `Usenet news`, `Chat (IRC)`, `Gopherspace`. |
 | `help` | `...` | a line of what it is, under the full-screen menu. Also: `Messages, files and doors on the board`. |
-| `mode` | `exec` | a program on the line: command (by /bin/sh -c); `passwd`: built in: the caller changes their password (min_password = 8 characters); `callers`: built in: the last callers (count = 10), the time, user and rate of each login (state_dir/callers, the latest 200; kept only with such an item); `setup`: built in: the sysop's setup, modemmenu.conf on full screens (as modemmenu -setup); needs users or groups; `tcp`: a TCP server, raw: host, port; send is sent first; `unix`: a server on a unix socket, raw: path; send too (tcp, telnet and rlogin take a path as well, for their protocol on a unix socket); `telnet`: a telnet server: host, port (23), terminal (ANSI); `rlogin`: an rlogin server: host, port (513), and rlogin_client_user ({password}), rlogin_server_user ({user}), rlogin_terminal (ansi/{baud}) Also: `rlogin`, `tcp`, `passwd`, `unix`, `callers`, `setup`. |
-| `run_as` | `{user}` | exec as this system user (modemmenu must be root) |
+| `mode` | `exec` | a program on the line: command (by /bin/sh -c); `passwd`: built in: the caller changes their password (min_password = 8 characters); `callers`: built in: the last callers (count = 10), the time, user and rate of each login (state_dir/callers, the latest 200; kept only with such an item); `setup`: built in: the sysop's setup, dmodem-login.conf on full screens (as dmodem-login -setup); needs users or groups; `tcp`: a TCP server, raw: host, port; send is sent first; `unix`: a server on a unix socket, raw: path; send too (tcp, telnet and rlogin take a path as well, for their protocol on a unix socket); `telnet`: a telnet server: host, port (23), terminal (ANSI); `rlogin`: an rlogin server: host, port (513), and rlogin_client_user ({password}), rlogin_server_user ({user}), rlogin_terminal (ansi/{baud}) Also: `rlogin`, `tcp`, `passwd`, `unix`, `callers`, `setup`. |
+| `run_as` | `{user}` | exec as this system user (dmodem-login must be root) |
 | `tty` | `raw` | the line as app_dmodem has it; sane: cooked, echo, CR to LF, for programs that want a terminal. Also: `sane`. |
 | `pass_password` | `yes` | the password in {password} and MODEM_PASSWORD. Also: `no`. |
 | `session_file` | `no` | yes: the session as JSON in a 0600 file, its path in MODEM_SESSION_FILE (removed after) |
 | `after` | `hangup` | when the item ends: hang up, or back to the menu. Also: `menu`. |
 | `connect_timeout` | `10` | seconds to reach a server. |
 | `terminal` | `ANSI` | telnet: the terminal type it tells the server ({term} and the other placeholders work) |
-| `header` | `no` | tcp, unix, telnet, rlogin: yes sends the session first, MODEM_* NAME=value lines and an empty line (the password only with pass_password), for modemmenu -serve or any program that reads it. Also: `yes`. |
+| `header` | `no` | tcp, unix, telnet, rlogin: yes sends the session first, MODEM_* NAME=value lines and an empty line (the password only with pass_password), for dmodem-login -serve or any program that reads it. Also: `yes`. |
 | `handoff` | `no` | unix with header = yes: yes hands the server the caller's line itself (SCM_RIGHTS, with the header) instead of copying bytes to it; the server gives it back by closing the connection (the bbs's listen with handoff = yes takes it) Also: `yes`. |
 | `users` | `alice` | bob these users ... |
 | `groups` | `sysops` | ... or members of these groups ([groups], or the system's for auth = system) Also: `dialup`. |
@@ -333,7 +333,7 @@ There may be any number of these, each with its own NAME.
 | `time_warning` | `no` | no time warning in the middle of PPP's frames. |
 | `command` | `exec /usr/sbin/pppd nodetach noauth local lock passive {ppp_local}:{ppp_remote} ms-dns {ppp_dns} ms-dns {ppp_dns2} ipparam {user}` | no time warning in the middle of PPP's frames. Also: `exec "$SHELL" -l`, `cd /srv/doors/lord && exec dosemu -dumb -E "lord.bat $MODEM_NODE"`, `cd "$HOME/uploads" && exec rz -b -R -E`, `cd "$HOME" && exec kermit -Y -x`, `exec lynx -anonymous https://example.org/`, `exec mutt`, `exec tin -r`, `exec irssi -c 127.0.0.1 -n {user}`, `exec lynx -anonymous gopher://gopher.floodgap.com/`. |
 | `min_password` | `8` | See the section above. |
-| `path` | `/run/modemmenu/more.sock` | See the section above. Also: `/run/bbs/handoff.sock`. |
+| `path` | `/run/dmodem-login/more.sock` | See the section above. Also: `/run/bbs/handoff.sock`. |
 | `dropfile_dir` | `/srv/doors/lord/node{node}` | See the section above. |
 | `count` | `10` | See the section above. |
 

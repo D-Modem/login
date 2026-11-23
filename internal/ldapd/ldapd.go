@@ -1,7 +1,7 @@
 // Copyright (C) 2026 D-Modem Authors
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// Package ldapd is modemmenu's LDAP provider ([ldapd] in modemmenu.conf):
+// Package ldapd is dmodem-login's LDAP provider ([ldapd] in dmodem-login.conf):
 // an LDAPv3 server over the same backends as the login prompt, so that
 // other programs (the BBS, a wiki, a mail server, a PBX) take the same
 // user names and passwords as the dial-up line.

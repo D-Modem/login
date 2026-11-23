@@ -8,7 +8,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/D-Modem/menu/internal/config"
+	"github.com/D-Modem/login/internal/config"
 )
 
 // the account rules of the system backend, PAM replaced by a stub
@@ -22,7 +22,7 @@ func TestSystemRules(t *testing.T) {
 	dialup := map[string]bool{"bob": true}
 	newAuth := func(minUID int, root bool, groups []string) *System {
 		return &System{
-			service: "modemmenu", minUID: minUID, allowRoot: root, groups: groups,
+			service: "dmodem-login", minUID: minUID, allowRoot: root, groups: groups,
 			lookup: func(u string) (*Account, error) {
 				if a, ok := accounts[u]; ok {
 					return a, nil
