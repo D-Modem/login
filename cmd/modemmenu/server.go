@@ -154,6 +154,15 @@ func serve(s *settings, config string) int {
 		}
 		go serveAuth(s, authLn)
 	}
+	ldapSrv, err := startLdapd(s)
+	if err != nil {
+		ln.Close()
+		if authLn != nil {
+			authLn.Close()
+		}
+		fmt.Fprintln(os.Stderr, "modemmenu:", err)
+		return 1
+	}
 
 	var (
 		mu       sync.Mutex
@@ -168,6 +177,9 @@ func serve(s *settings, config string) int {
 		ln.Close()
 		if authLn != nil {
 			authLn.Close()
+		}
+		if ldapSrv != nil {
+			ldapSrv.Close()
 		}
 	}()
 

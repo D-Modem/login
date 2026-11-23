@@ -23,6 +23,7 @@ full.
 | [`[sql]`](#sql) | SQL: query gets args (user, password, in that order of placeholders) and returns one column: the stored password, checked as hash says (auto: by its prefix as in [file]; or bcrypt, sha256, sha512, plain). |
 | [`[server]`](#server) | modemmenu -serve: one modemmenu for all calls, on a unix socket (or tcp:host:port). |
 | [`[authd]`](#authd) | The auth socket: the BBS's other logins (telnet, SSH, the web) ask the backends above for a user's password through it, so that it is the same one. |
+| [`[ldapd]`](#ldapd) | The LDAP provider: an LDAPv3 server over the backends above, so that other programs (the BBS, a wiki, a mail server, a PBX) use the same user names and passwords. |
 | [`[ppp_pool]`](#ppp_pool) | The PPP callers' addresses: a command that names {ppp_remote} (or {ppp_local}, {ppp_dns}, {ppp_dns2}) takes the first free address of range for the call, so that several lines run PPP at once, and gives it back when pppd ends. |
 | [`[autoppp]`](#autoppp) | AutoPPP: a dialer that starts PPP at once (Windows' Dial-Up Networking, most others) sends a PPP frame where the login prompt wants a name; then command runs on the line instead (pppd), and its modemmenu.so plugin (make builds it with ppp-dev's headers; make install puts it in pppd's plugin directory) asks this call's auth socket for the PAP login: the backends check it as at the prompt, then item's access rules, then the time limits, whose time left becomes pppd's maxconnect. |
 | [`[aol]`](#aol) | AOL: the classic AOL client (2.5 to 4.0) dials a network and its CCL script answers the network's prompts before it speaks P3. |
@@ -204,6 +205,30 @@ The auth socket: the BBS's other logins (telnet, SSH, the web) ask the backends 
 | `socket_group` | `bbs` | See the section above. |
 | `allow_users` | `bbs` | See the section above. |
 | `max_clients` | `16` | requests at once. |
+
+## `[ldapd]`
+
+The LDAP provider: an LDAPv3 server over the backends above, so that other programs (the BBS, a wiki, a mail server, a PBX) use the same user names and passwords.  Answered by -serve, or by -ldapd alone.  The directory is read only: uid=<user>,ou=people,<base_dn> for each user of the users file, of [groups] and each system account that a search names, and cn=<group>,ou=groups,<base_dn> for each group of [groups].  No entry has a password.  Do not point [ldap] at this server: that is a loop.
+
+| key | sample | what it does |
+|---|---|---|
+| `listen` | `tcp:127.0.0.1:389` | tcp:host:port (389 is the usual port) or a unix socket path (ldapi) |
+| `listen_tls` | `tcp:0.0.0.0:636` | tcp:host:port for LDAP over TLS (636 is the usual port); it needs tls_cert and tls_key. |
+| `socket_mode` | `0660` | the unix socket's mode and group (listen = a path) |
+| `socket_group` | `bbs` | the unix socket's mode and group (listen = a path) |
+| `base_dn` | `dc=example,dc=org` | the top of the directory. |
+| `tls_cert` | `/etc/modemmenu/ldap.crt` | the certificate and the key, PEM, for listen_tls and StartTLS. |
+| `tls_key` | `/etc/modemmenu/ldap.key` | the certificate and the key, PEM, for listen_tls and StartTLS. |
+| `require_tls` | `yes` | yes: a bind must use TLS (StartTLS or listen_tls), except on a unix socket or on loopback. |
+| `anonymous_search` | `no` | yes: a client that did not bind can search. The root DSE is always open. |
+| `user_search` | `yes` | yes: a user who did bind can see all users; no: only the user's own entry and the groups. |
+| `bind_dn` | `cn=reader,dc=example,dc=org` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (modemmenu -hash), not the password. The service account can see all entries. |
+| `bind_password` | `$2a$10$...` | the service account for programs that search before they bind (a wiki, a mail server). bind_password is a hash (modemmenu -hash), not the password. The service account can see all entries. |
+| `password_modify` | `yes` | yes: users can change their password with Password Modify (RFC 3062), with the old password, in the backend that holds the account. |
+| `min_password` | `8` | the shortest new password. |
+| `max_clients` | `64` | connections at once. |
+| `idle_timeout` | `5m` | a connection with no request for this long is closed. |
+| `size_limit` | `1000` | the most entries that one search gives. |
 
 ## `[ppp_pool]`
 

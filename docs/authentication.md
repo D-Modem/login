@@ -135,3 +135,6 @@ the sysop did not unlock). If a caller changes a password from the menu
 (`mode = passwd`), the socket immediately uses the new password. For the
 configuration on the BBS side, refer to its `[modemmenu] auth_socket`
 (docs/wiki/Modem-Callers.md in the BBS repository).
+
+Other programs can also use LDAP to check the same passwords. Refer to
+[the LDAP provider](ldap-provider.md).

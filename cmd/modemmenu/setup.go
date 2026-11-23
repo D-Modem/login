@@ -41,7 +41,7 @@ var kindGroups = []struct {
 	{"Users", []string{"file", "ldap", "sql", "system", "groups"}},
 	{"Menu", []string{"menu", "item", "dropfile"}},
 	{"Dial-up", []string{"ppp_pool", "autoppp", "aol"}},
-	{"Server", []string{"server", "authd"}},
+	{"Server", []string{"server", "authd", "ldapd"}},
 }
 
 // kindTitles: a section's window's title
@@ -51,7 +51,7 @@ var kindTitles = map[string]string{
 	"file": "Users file", "ldap": "LDAP", "sql": "SQL database", "system": "System accounts (PAM)",
 	"groups": "Groups", "menu": "The menu", "item": "Menu items", "dropfile": "Door drop files",
 	"ppp_pool": "PPP addresses and DNS", "autoppp": "AutoPPP (dialers)", "aol": "AOL networks",
-	"server": "Server (-serve)", "authd": "Auth socket (authd)",
+	"server": "Server (-serve)", "authd": "Auth socket (authd)", "ldapd": "LDAP provider (ldapd)",
 }
 
 // setupUI is a setup session: the file, what it was, the windows up.

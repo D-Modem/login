@@ -269,6 +269,52 @@ max_sessions = 32
 ; requests at once
 ;max_clients = 16
 
+; The LDAP provider: an LDAPv3 server over the backends above, so that
+; other programs (the BBS, a wiki, a mail server, a PBX) use the same user
+; names and passwords.  Answered by -serve, or by -ldapd alone.  The
+; directory is read only: uid=<user>,ou=people,<base_dn> for each user of
+; the users file, of [groups] and each system account that a search names,
+; and cn=<group>,ou=groups,<base_dn> for each group of [groups].  No entry
+; has a password.  Do not point [ldap] at this server: that is a loop
+;[ldapd]
+; tcp:host:port (389 is the usual port) or a unix socket path (ldapi)
+;listen = tcp:127.0.0.1:389
+; tcp:host:port for LDAP over TLS (636 is the usual port); it needs
+; tls_cert and tls_key
+;listen_tls = tcp:0.0.0.0:636
+; the unix socket's mode and group (listen = a path)
+;socket_mode = 0660
+;socket_group = bbs
+; the top of the directory
+;base_dn = dc=example,dc=org
+; the certificate and the key, PEM, for listen_tls and StartTLS
+;tls_cert = /etc/modemmenu/ldap.crt
+;tls_key = /etc/modemmenu/ldap.key
+; yes: a bind must use TLS (StartTLS or listen_tls), except on a unix
+; socket or on loopback
+;require_tls = yes
+; yes: a client that did not bind can search.  The root DSE is always open
+;anonymous_search = no
+; yes: a user who did bind can see all users; no: only the user's own
+; entry and the groups
+;user_search = yes
+; the service account for programs that search before they bind (a
+; wiki, a mail server).  bind_password is a hash (modemmenu -hash), not
+; the password.  The service account can see all entries
+;bind_dn = cn=reader,dc=example,dc=org
+;bind_password = $2a$10$...
+; yes: users can change their password with Password Modify (RFC 3062),
+; with the old password, in the backend that holds the account
+;password_modify = yes
+; the shortest new password
+;min_password = 8
+; connections at once
+;max_clients = 64
+; a connection with no request for this long is closed
+;idle_timeout = 5m
+; the most entries that one search gives
+;size_limit = 1000
+
 ; The PPP callers' addresses: a command that names {ppp_remote} (or
 ; {ppp_local}, {ppp_dns}, {ppp_dns2}) takes the first free address of range
 ; for the call, so that several lines run PPP at once, and gives it back when

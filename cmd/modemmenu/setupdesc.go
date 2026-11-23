@@ -134,6 +134,26 @@ var setupDescs = map[string]string{
 	"authd.allow_users":  "The system users whose programs may ask the socket (the BBS's user).",
 	"authd.max_clients":  "How many requests the socket answers at once.",
 
+	// [ldapd]
+	"ldapd":                  "The LDAP provider: an LDAP server that lets other programs (the BBS, a wiki, mail) use the same users and passwords as the dial-up login.",
+	"ldapd.listen":           "Where the LDAP server listens: tcp:host:port (port 389) or a unix socket's path.",
+	"ldapd.listen_tls":       "Where the LDAP server listens with TLS (ldaps): tcp:host:port (port 636).  It needs tls_cert and tls_key.",
+	"ldapd.socket_mode":      "The unix socket's permissions (octal): who may connect to it.",
+	"ldapd.socket_group":     "The group that owns the unix socket.",
+	"ldapd.base_dn":          "The top of the directory, for example dc=example,dc=org.  Users are under ou=people, groups under ou=groups.",
+	"ldapd.tls_cert":         "The server's certificate (PEM), for listen_tls and StartTLS.",
+	"ldapd.tls_key":          "The certificate's private key (PEM).",
+	"ldapd.require_tls":      "yes: a password must go over TLS, except on a unix socket or loopback.",
+	"ldapd.anonymous_search": "yes: a client that did not log in (bind) can search the directory.",
+	"ldapd.user_search":      "yes: a user who logged in can see all users; no: only their own entry and the groups.",
+	"ldapd.bind_dn":          "The DN of the service account, for programs that search before they log a user in.",
+	"ldapd.bind_password":    "The service account's password, as a hash (modemmenu -hash).",
+	"ldapd.password_modify":  "yes: users can change their password over LDAP (Password Modify).",
+	"ldapd.min_password":     "The shortest new password that Password Modify takes.",
+	"ldapd.max_clients":      "How many connections the LDAP server takes at once.",
+	"ldapd.idle_timeout":     "A connection with no request for this long is closed.",
+	"ldapd.size_limit":       "The most entries one search gives.",
+
 	// [ppp_pool]
 	"ppp_pool":       "The addresses PPP (dial-up networking) callers get, so several lines can run PPP at once, each with its own.",
 	"ppp_pool.local": "This server's own address on every PPP link.",

@@ -96,6 +96,7 @@ type settings struct {
 	aol        aolSettings
 	terminal   terminalSettings
 	authd      *authdSettings // nil: no auth socket
+	ldapd      *ldapdSettings // nil: no LDAP provider
 	menuTitle  string
 	menuPrompt string
 	hangup     []string // what hangs up, upper case; the first one shown
@@ -200,6 +201,9 @@ func loadSettings(path string) (*settings, error) {
 		return nil, err
 	}
 	if s.authd, err = loadAuthd(c.Section("authd")); err != nil {
+		return nil, err
+	}
+	if s.ldapd, err = loadLdapd(c.Section("ldapd")); err != nil {
 		return nil, err
 	}
 
