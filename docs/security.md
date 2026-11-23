@@ -32,6 +32,12 @@
   of the BBS (`socket_mode` 0660 or 0600, `socket_group`, `allow_users`).
   modemmenu refuses a mode that gives access to other users, and it also
   refuses TCP.
+- The LDAP provider (`[ldapd]`) also tells if a password is correct, and
+  it can listen on a network. Each failed bind waits for `fail_delay`.
+  With `require_tls = yes` (the default), a password from a network must
+  go through TLS. Do not open the LDAP ports to the internet if it is not
+  necessary. `bind_password` must be a hash. Refer to
+  [the LDAP provider](ldap-provider.md).
 - The PAP of AutoPPP sends the password as clear text on the line, as all
   PAP does. On a SIP trunk, use SRTP or a network that you trust.
 - The log (by default, the auth facility of syslog) records logins,

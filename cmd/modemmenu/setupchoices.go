@@ -150,9 +150,13 @@ func (u *setupUI) choicesFor(sec string, kd *confdoc.Kind, k *confdoc.Key) *choi
 		return u.listenChoices(sec, "/run/modemmenu/modemmenu.sock", "tcp:127.0.0.1:2323")
 	case "authd.listen":
 		return u.listenChoices(sec, "/run/modemmenu/auth.sock", "")
-	case "server.socket_mode", "authd.socket_mode":
+	case "ldapd.listen":
+		return u.listenChoices(sec, "/run/modemmenu/ldapi.sock", "tcp:127.0.0.1:389")
+	case "ldapd.listen_tls":
+		return suggest("tcp:0.0.0.0:636", "every network, the usual ldaps port", "tcp:127.0.0.1:636", "this machine only")
+	case "server.socket_mode", "authd.socket_mode", "ldapd.socket_mode":
 		return suggest("0660", "the owner and the group", "0600", "the owner only", "0666", "anyone on the machine")
-	case "server.socket_group", "authd.socket_group":
+	case "server.socket_group", "authd.socket_group", "ldapd.socket_group":
 		return u.systemGroupChoices()
 	case "authd.allow_users":
 		c := u.systemUserChoices()
@@ -357,7 +361,7 @@ func (u *setupUI) listenChoices(sec, path, tcp string) *choiceSet {
 	if tcp != "" {
 		c.add(tcp, "TCP on this machine only")
 	}
-	for _, other := range []string{"server", "authd"} {
+	for _, other := range []string{"server", "authd", "ldapd"} {
 		if other == sec {
 			continue
 		}

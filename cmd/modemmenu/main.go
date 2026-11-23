@@ -38,7 +38,7 @@ var logger = log.New(io.Discard, "", 0)
 // logf: a line in the log ([general] log)
 func logf(format string, args ...any) { logger.Printf(format, args...) }
 
-// main: the flags; then -hash, -check, -authd or -serve, or a call on
+// main: the flags; then -hash, -check, -authd, -ldapd or -serve, or a call on
 // stdin and stdout
 func main() {
 	config := flag.String("config", "/etc/asterisk/modemmenu.conf", "the configuration `file`")
@@ -51,6 +51,7 @@ func main() {
 	listenAt := flag.String("listen", "", "with -serve: listen on this unix socket `path` (or tcp:host:port) instead of [server] listen")
 	upstreamFlag := flag.Bool("upstream", false, "a session of -serve with trust_user (internal)")
 	authdFlag := flag.Bool("authd", false, "answer the [authd] auth socket alone (with -serve it is answered too)")
+	ldapdFlag := flag.Bool("ldapd", false, "answer the [ldapd] LDAP provider alone (with -serve it is answered too)")
 	setupFlag := flag.Bool("setup", false, "change the configuration on a full screen (the sysop's setup)")
 	flag.Parse()
 
@@ -79,6 +80,9 @@ func main() {
 	}
 	if *authdFlag {
 		os.Exit(runAuthd(s))
+	}
+	if *ldapdFlag {
+		os.Exit(runLdapd(s))
 	}
 	if *serveFlag {
 		if *listenAt != "" {

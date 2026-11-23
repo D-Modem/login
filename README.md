@@ -35,6 +35,7 @@ Selection: ppp
 ```
 
 - Logins from a users file, LDAP, SQL (MySQL/MariaDB, PostgreSQL, SQLite) or system accounts through PAM.
+- An LDAP provider: other programs (the BBS, a wiki, mail) can use the same users and passwords through LDAP ([docs/ldap-provider.md](docs/ldap-provider.md)).
 - Detection of PPP dialers (AutoPPP and PAP), with a pppd plugin.
 - Support for the classic AOL client when it dials in. modemmenu emulates AOLnet, SprintNet and Tymnet. Then it connects the line to the AOL host of a BBS.
 - Menus with access by user and by group, guest access and self sign-up.

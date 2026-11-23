@@ -18,6 +18,7 @@ nav:
   - Configuration reference: reference.md
   - Setup screens: setup.md
   - Authentication: authentication.md
+  - LDAP provider: ldap-provider.md
   - PPP: ppp.md
   - Dial-up network: dialup-network.md
   - AOL callers: aol.md
