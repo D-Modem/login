@@ -34,9 +34,6 @@ static int logged_in;
 static option_t options[] = {
 	{ .name = "dmodem-login-socket", .type = o_string, .addr = &sock_path,
 	  .description = "dmodem-login's auth socket (default: $DMODEM_LOGIN_AUTH_SOCKET)" },
-	/* the old name, from before modemmenu was dmodem-login */
-	{ .name = "modemmenu-socket", .type = o_string, .addr = &sock_path,
-	  .description = "the same as dmodem-login-socket" },
 	{ .name = NULL }
 };
 

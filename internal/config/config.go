@@ -243,15 +243,3 @@ func Fields(s string) []string {
 		return r == ',' || r == ' ' || r == '\t'
 	})
 }
-
-// Legacy: path, or old when path is not there and old is: the default
-// paths of modemmenu, the old name of dmodem-login, still used by an
-// install from before the rename
-func Legacy(path, old string) string {
-	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
-		if _, err := os.Stat(old); err == nil {
-			return old
-		}
-	}
-	return path
-}
