@@ -8,9 +8,11 @@
 - [Authentication](authentication.md): users file, LDAP, SQL, system accounts (PAM), password changes and the auth socket.
 - [The LDAP provider](ldap-provider.md): an LDAP server for other programs, with the same users and passwords.
 - [PPP dialers](ppp.md): AutoPPP and PAP, and the pppd plugin.
+- [The dial-up network](dialup-network.md): the addresses, DNS and network that PPP callers get.
 - [AOL callers](aol.md): the classic AOL client when it dials in, and the emulation of its network.
 - [Security notes](security.md).
 - [Tests](testing.md).
 - [The rename from modemmenu](rename.md): the new names, and what to change on an old installation.
+- [Documentation style](STYLE.md): the rules for ASD-STE100 Simplified Technical English.
 
 The samples: [dmodem-login.conf.sample](../samples/dmodem-login.conf.sample), [dmodem-login.users.sample](../samples/dmodem-login.users.sample), [dmodem-login.pam.sample](../samples/dmodem-login.pam.sample), [dmodem-login.service.sample](../samples/dmodem-login.service.sample), [dmodem-login-authd.service.sample](../samples/dmodem-login-authd.service.sample), [dmodem-login-ldapd.service.sample](../samples/dmodem-login-ldapd.service.sample).
