@@ -54,6 +54,11 @@
   directions, different rates, and an unknown rate. It also tests the
   connect rate on calls: after the banner, removed when there is no
   rate, its own text, and disabled.
+- It tests the modulation, the error correction and the compression as
+  `{modulation}`, `{link}` and `{connection}`: the names of D-Modem, the
+  names for persons, no error correction and no names. It also tests the
+  connect message on calls with `DMODEM_MODULATION`, `DMODEM_PROTOCOL`
+  and `DMODEM_COMPRESSION`.
 - It tests the uid, root and group rules of the system backend, with a
   replacement for PAM.
 

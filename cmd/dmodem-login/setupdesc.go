@@ -20,7 +20,7 @@ var setupDescs = map[string]string{
 	"general.banner_file":          "A file shown instead of the banner (it may hold ANSI colors).  Read at every call.",
 	"general.login_prompt":         "The prompt that asks the caller for their user name.",
 	"general.password_prompt":      "The prompt that asks the caller for their password.",
-	"general.connect_message":      "Shown after the banner when the connect rate is known: {speed} is the rate.  \"\" shows nothing.",
+	"general.connect_message":      "Shown after the banner when the connect rate is known: {connection} is the rate, the modulation and the error correction; {speed} is the rate only.  \"\" shows nothing.",
 	"general.welcome":              "Shown once a caller has logged in, before the message of the day.  {user}, {date} and the other placeholders work here.",
 	"general.motd":                 "The message of the day: shown after the welcome, before the menu.",
 	"general.motd_file":            "A file shown after motd as part of the message of the day, read at every login.",

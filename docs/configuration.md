@@ -73,22 +73,45 @@ screen ([the sysop's setup](setup.md)).
 
 
 Immediately after the banner, before the login prompt, dmodem-login tells
-the caller the connect rate of the modems, as BBSs did:
+the caller the connect rate, the modulation and the error correction of
+the modems, as BBSs did:
 
 ```
-Connected at 33600 bit/s.
-Connected at 50666 bit/s down, 31200 bit/s up.
+Connected at 33600 bit/s (V.34, LAPM/V.42bis).
+Connected at 50666 bit/s down, 31200 bit/s up (V.90, LAPM/V.44).
+Connected at 2400 bit/s (V.22bis).
 ```
 
 The second line is for a V.90 call, with a different rate in each
-direction ("down" is to the caller). `[general] connect_message`
-(`"\r\nConnected at {speed}.\r\n"`) is the text. `{speed}` is the rate
-in this format. It also operates in the other texts (the welcome, the
-message of the day, the prompt). If the rate is not known (no
-`DMODEM_RATE` and no `-rate`), dmodem-login does not show the message.
-`connect_message = ""` disables the message. `{baud}`, `{tx_rate}` and
-`{rx_rate}` are only the numbers. For example, use `connect_message =
-"CONNECT {baud}\r\n"` to show the same words as a modem.
+direction ("down" is to the caller). The third line is for a call
+without error correction. `[general] connect_message`
+(`"\r\nConnected at {connection}.\r\n"`) is the text. `{connection}`
+is the rate, the modulation and the link in this format. These
+placeholders also operate in the other texts (the welcome, the message
+of the day, the prompt):
+
+| placeholder | example | value |
+|---|---|---|
+| `{connection}` | `33600 bit/s (V.34, LAPM/V.42bis)` | the rate, then the modulation and the link in parentheses |
+| `{speed}` | `33600 bit/s` | the rate only |
+| `{modulation}` | `V.34` | the modulation: `V.92`, `V.90`, `K56flex`, `V.34`, `V.32bis`, `Bell 103` and so on |
+| `{link}` | `LAPM/V.42bis` | the error correction and the compression, as `CONNECT` shows them |
+| `{protocol}` | `LAPM` | the error correction: `LAPM`, `MNP` and so on |
+| `{compression}` | `V.42bis` | the compression: `V.42bis`, `V.44`, `MNP5` and so on |
+
+D-Modem gives the modulation, the error correction and the compression
+in `DMODEM_MODULATION`, `DMODEM_PROTOCOL` and `DMODEM_COMPRESSION`
+(D-Modem `V90`, `LAPM` and `V42bis`). dmodem-login changes these names
+to the names in the table. If D-Modem does not give them (for example,
+an older D-Modem or a getty), `{connection}` is the same as `{speed}`.
+A call without error correction or without compression has an empty
+`{protocol}` or `{compression}`.
+
+If the rate is not known (no `DMODEM_RATE` and no `-rate`), dmodem-login
+does not show the message. `connect_message = ""` disables the message.
+`{baud}`, `{tx_rate}` and `{rx_rate}` are only the numbers. For example,
+use `connect_message = "CONNECT {baud}/{link}\r\n"` to show the same
+words as a modem.
 
 ## The caller's terminal
 
@@ -456,6 +479,10 @@ back to the menu.
 | `{baud}` | `MODEM_BAUD` | the connect rate to the caller, bit/s |
 | `{speed}` | `MODEM_SPEED` | the connect rate in a format for persons to read: `33600 bit/s`, or `50666 bit/s down, 31200 bit/s up`. Empty if not known |
 | `{rate}`, `{tx_rate}`, `{rx_rate}` | `MODEM_RATE`, `MODEM_TX_RATE`, `MODEM_RX_RATE` | both rates |
+| `{connection}` | `MODEM_CONNECTION` | the connect rate with the modulation and the link: `33600 bit/s (V.34, LAPM/V.42bis)`. Empty if the rate is not known |
+| `{modulation}` | `MODEM_MODULATION` | the modulation (`DMODEM_MODULATION` of app_dmodem): `V.90`, `K56flex`, `V.34`. Empty if not known |
+| `{protocol}`, `{compression}` | `MODEM_PROTOCOL`, `MODEM_COMPRESSION` | the error correction (`LAPM`, `MNP`) and the compression (`V.42bis`, `V.44`, `MNP5`). Empty for none or if not known |
+| `{link}` | `MODEM_LINK` | the two as `CONNECT` shows them: `LAPM/V.42bis`. Empty without error correction |
 | `{date}`, `{time}` | `MODEM_DATE`, `MODEM_TIME` | the date and time of the connection |
 | `{datetime}`, `{epoch}` | `MODEM_DATETIME`, `MODEM_EPOCH` | the same, RFC 3339 and Unix time |
 | `{channel}`, `{profile}` | `MODEM_CHANNEL`, `MODEM_PROFILE` | the channel and profile of app_dmodem |

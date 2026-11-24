@@ -26,6 +26,12 @@ type session struct {
 	TxRate   string `json:"tx_rate"`
 	RxRate   string `json:"rx_rate"`
 	Channel  string `json:"channel"`
+	// the modulation, error correction and compression of the
+	// connection, as app_dmodem's DMODEM_MODULATION, DMODEM_PROTOCOL and
+	// DMODEM_COMPRESSION give them (V90, LAPM, V42bis); "" if not told
+	Modulation  string `json:"modulation"`
+	Protocol    string `json:"protocol"`
+	Compression string `json:"compression"`
 	// the address the call came from by VoIP (the SIP peer's: app_dmodem's
 	// DMODEM_PEER), "" if not told
 	Peer      string    `json:"peer"`
@@ -55,16 +61,19 @@ type session struct {
 
 // newSession from app_dmodem's environment (DMODEM_RATE "tx/rx",
 // DMODEM_CALLERID, DMODEM_DIALED, DMODEM_CHANNEL, DMODEM_PROFILE,
-// DMODEM_PEER), what the
-// command line overrides of it
+// DMODEM_PEER, DMODEM_MODULATION, DMODEM_PROTOCOL, DMODEM_COMPRESSION),
+// what the command line overrides of it
 func newSession(rate, dialed, callerID string, now time.Time) *session {
 	s := &session{
-		Dialed:    dialed,
-		CallerID:  callerID,
-		Channel:   os.Getenv("DMODEM_CHANNEL"),
-		Peer:      os.Getenv("DMODEM_PEER"),
-		Profile:   os.Getenv("DMODEM_PROFILE"),
-		Connected: now,
+		Dialed:      dialed,
+		CallerID:    callerID,
+		Channel:     os.Getenv("DMODEM_CHANNEL"),
+		Peer:        os.Getenv("DMODEM_PEER"),
+		Profile:     os.Getenv("DMODEM_PROFILE"),
+		Modulation:  os.Getenv("DMODEM_MODULATION"),
+		Protocol:    os.Getenv("DMODEM_PROTOCOL"),
+		Compression: os.Getenv("DMODEM_COMPRESSION"),
+		Connected:   now,
 	}
 	// what an upstream menu found the terminal to be
 	s.Terminal = os.Getenv("DMODEM_LOGIN_UPSTREAM_TERMINAL")
@@ -103,6 +112,82 @@ func (s *session) Speed() string {
 	return fmt.Sprintf("%d bit/s down, %d bit/s up", tx, rx)
 }
 
+// modulationName: a modulation as app_dmodem names it (the pump names
+// of AT+MS: V34, V90, V32bis, K56Flex, Bell103) in the form persons read
+// (V.34, V.90, V.32bis, K56flex, Bell 103); a name already in that form,
+// or one it does not know, as it is
+func modulationName(m string) string {
+	switch m {
+	case "K56Flex":
+		return "K56flex"
+	case "VFC":
+		return "V.FC"
+	}
+	if rest, ok := strings.CutPrefix(m, "Bell"); ok && rest != "" && rest[0] >= '0' && rest[0] <= '9' {
+		return "Bell " + rest
+	}
+	if len(m) > 1 && m[0] == 'V' && m[1] >= '0' && m[1] <= '9' {
+		return "V." + m[1:]
+	}
+	return m
+}
+
+// protocolName: the error correction (LAPM, MNP, X.75...) for persons
+// to read; "" for none (NONE) or not known
+func protocolName(p string) string {
+	if strings.EqualFold(p, "NONE") {
+		return ""
+	}
+	return p
+}
+
+// compressionName: the compression (V42bis, V44, MNP5...) for persons
+// to read (V.42bis, V.44, MNP5); "" for none (NONE) or not known
+func compressionName(c string) string {
+	switch {
+	case strings.EqualFold(c, "NONE"):
+		return ""
+	case len(c) > 1 && c[0] == 'V' && c[1] >= '0' && c[1] <= '9':
+		return "V." + c[1:]
+	}
+	return c
+}
+
+// Link: the error correction and the compression as CONNECT shows them,
+// "LAPM/V.42bis", "MNP/MNP5" or "LAPM"; "" without error correction or
+// when it is not known
+func (s *session) Link() string {
+	p := protocolName(s.Protocol)
+	if p == "" {
+		return ""
+	}
+	if c := compressionName(s.Compression); c != "" {
+		return p + "/" + c
+	}
+	return p
+}
+
+// Connection: the connect rate with the modulation and the link, for
+// the caller to read: "33600 bit/s (V.34, LAPM/V.42bis)"; the rate alone
+// ({speed}) when neither is known; "" when the rate is not known
+func (s *session) Connection() string {
+	speed := s.Speed()
+	if speed == "" {
+		return ""
+	}
+	var parts []string
+	if m := modulationName(s.Modulation); m != "" {
+		parts = append(parts, m)
+	}
+	if l := s.Link(); l != "" {
+		parts = append(parts, l)
+	}
+	if len(parts) == 0 {
+		return speed
+	}
+	return speed + " (" + strings.Join(parts, ", ") + ")"
+}
+
 // vars: the placeholders of templates and the environment, by name
 func (s *session) vars(withPassword bool) map[string]string {
 	v := map[string]string{
@@ -115,6 +200,11 @@ func (s *session) vars(withPassword bool) map[string]string {
 		"tx_rate":      s.TxRate,
 		"rx_rate":      s.RxRate,
 		"speed":        s.Speed(),
+		"modulation":   modulationName(s.Modulation),
+		"protocol":     protocolName(s.Protocol),
+		"compression":  compressionName(s.Compression),
+		"link":         s.Link(),
+		"connection":   s.Connection(),
 		"channel":      s.Channel,
 		"peer":         s.Peer,
 		"profile":      s.Profile,

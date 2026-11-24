@@ -198,6 +198,9 @@ func (s *session) String() string {
 // run the login and the menu: the exit status
 func run(t *term.Term, s *settings, sess *session) int {
 	logf("connect %v", sess)
+	if sess.Modulation != "" || sess.Protocol != "" {
+		logf("connection modulation=%s protocol=%s compression=%s %v", sess.Modulation, sess.Protocol, sess.Compression, sess)
+	}
 	if !s.callerAllowed(sess.CallerID) {
 		logf("refused by caller ID %v", sess)
 		t.Write(s.callerID.denyMessage)
@@ -214,8 +217,9 @@ func run(t *term.Term, s *settings, sess *session) int {
 	if t.Write(config.Expand(s.banner, sess.vars(false), nil)) != nil {
 		return 1
 	}
-	// the connect rate, as BBSs greeted their callers (not when it is
-	// not known: no "Connected at ." on a getty without -rate)
+	// the connect rate, the modulation and the link, as BBSs greeted
+	// their callers (not when the rate is not known: no "Connected at ."
+	// on a getty without -rate)
 	if s.connectMessage != "" && sess.Speed() != "" {
 		t.Write(config.Expand(s.connectMessage, sess.vars(false), nil))
 	}

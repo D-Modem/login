@@ -43,7 +43,7 @@ The login: the log, the backends, what the caller sees, the time limits.
 | `banner_file` | `/etc/asterisk/dmodem-login.banner` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
 | `login_prompt` | `\r\nlogin: ` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
 | `password_prompt` | `Password: ` | what the caller sees first (or a file of it, which may have ANSI's colors), then the prompts of the login. |
-| `connect_message` | `\r\nConnected at {speed}.\r\n` | after the banner, before the login prompt: the connect rate ({speed}: "33600 bit/s", or "50666 bit/s down, 31200 bit/s up"); left out when it is not known; "" for none. |
+| `connect_message` | `\r\nConnected at {connection}.\r\n` | after the banner, before the login prompt: the connect rate, the modulation and the error correction ({connection}: "33600 bit/s (V.34, LAPM/V.42bis)"; {speed}: the rate only, "33600 bit/s", or "50666 bit/s down, 31200 bit/s up"); left out when the rate is not known; "" for none. |
 | `welcome` | `\r\nHello {user}, on {date} at {time}.\r\n` | after a login, before the motd ({placeholders}; on the full-screen menu, at the top of its window) |
 | `motd` | `\r\nThe line is down for maintenance on Sunday.\r\n` | the message of the day, after the welcome and before the menu: motd, then the file (read at each login), {placeholders} in both. |
 | `motd_file` | `/etc/motd` | the message of the day, after the welcome and before the menu: motd, then the file (read at each login), {placeholders} in both. |

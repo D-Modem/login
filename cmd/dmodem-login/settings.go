@@ -128,7 +128,7 @@ func loadSettings(path string) (*settings, error) {
 	s.loginPrompt = config.Unescape(g.Get("login_prompt", `\r\nlogin: `))
 	s.passwordPrompt = config.Unescape(g.Get("password_prompt", "Password: "))
 	s.welcome = config.Unescape(g.Get("welcome", `\r\nWelcome, {user}.\r\n`))
-	s.connectMessage = config.Unescape(g.Get("connect_message", `\r\nConnected at {speed}.\r\n`))
+	s.connectMessage = config.Unescape(g.Get("connect_message", `\r\nConnected at {connection}.\r\n`))
 	s.motd = config.Unescape(g.Get("motd", ""))
 	s.motdFile = g.Get("motd_file", "")
 	s.goodbye = config.Unescape(g.Get("goodbye", `\r\nGoodbye.\r\n`))
