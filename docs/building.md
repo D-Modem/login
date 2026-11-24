@@ -7,8 +7,9 @@ You must have Go 1.22 or later. Use these commands:
 make                    # or: go build ./cmd/dmodem-login (-tags pam for PAM)
 make PAM=0              # without PAM, when libpam's headers are there
 make test
-make install            # /usr/local/bin/dmodem-login, and the samples into
-                        # /etc/asterisk (and /etc/pam.d) if there are none
+make install            # /usr/local/bin/dmodem-login, the samples into
+                        # /etc/asterisk (and /etc/pam.d), and the systemd
+                        # units into /etc/systemd/system, if there are none
 ```
 
 If the headers of libpam are installed, `make` builds with PAM. The

@@ -150,6 +150,40 @@ when it starts. It does not replace a socket that is in use.
 server under systemd. systemd also makes `/run/dmodem-login`. dmodem-login
 records each connection in the log, with the pid and uid of its peer.
 
+## Under systemd
+
+`make install` installs three units in `/etc/systemd/system`. It makes
+each unit from its sample in `samples/`, with the paths of `BINDIR` and
+`CONF_DIR`:
+
+| Unit | What it runs |
+| --- | --- |
+| `dmodem-login.service` | `dmodem-login -serve`, the server on the unix socket (the section above) |
+| `dmodem-login-authd.service` | the auth socket alone, for the BBS (refer to [Authentication](authentication.md)) |
+| `dmodem-login-ldapd.service` | the LDAP provider alone (refer to [The LDAP provider](ldap-provider.md)) |
+
+`make install` does not replace a unit that is already there. Thus, your
+changes to a unit stay. `make install` does not enable or start a unit.
+Enable only the unit that you use. `dmodem-login -serve` also answers the
+auth socket and the LDAP provider. Thus, do not enable the other two
+units with `dmodem-login.service`.
+
+Do these steps as root, after `make install`:
+
+```
+systemctl daemon-reload
+systemctl enable --now dmodem-login     # or dmodem-login-authd, or dmodem-login-ldapd
+```
+
+`SYSTEMD_UNIT_DIR` selects a different directory for the units, for
+example `make install SYSTEMD_UNIT_DIR=/usr/local/lib/systemd/system`.
+`make install-freepbx` and `make install-dialup` also use it.
+
+`make install-freepbx` installs its own `dmodem-login.service`, with
+`/etc/dmodem-login`. It also keeps a unit that is already there. Thus, if
+you ran `make install` before, remove
+`/etc/systemd/system/dmodem-login.service` before `make install-freepbx`.
+
 ## On FreePBX
 
 [freepbx/](../freepbx/README.md) is a configuration that is ready to use
