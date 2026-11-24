@@ -1,0 +1,27 @@
+#!/bin/sh
+# Copyright (C) 2026 D-Modem Authors
+# SPDX-License-Identifier: AGPL-3.0-only
+#
+# dmodem-login-useradd USER PENDING: makes the system account of a
+# signup.  [system] create_command runs it:
+#
+#   create_command = /usr/local/sbin/dmodem-login-useradd {user} {pending}
+#   remove_command = userdel -r {user}
+#
+# The password comes on the standard input.  PENDING = yes locks the
+# account until the sysop unlocks it (usermod -U USER).  Change GROUP and
+# SHELL for your system.  dmodem-login must run as root for useradd.
+set -eu
+user=$1
+pending=$2
+GROUP=${GROUP:-dialup}
+SHELL_=${SHELL_:-/usr/sbin/nologin}
+
+IFS= read -r password
+getent group "$GROUP" >/dev/null || groupadd "$GROUP"
+useradd --create-home --shell "$SHELL_" --gid "$GROUP" \
+	--comment "dmodem-login signup" "$user"
+printf '%s:%s\n' "$user" "$password" | chpasswd
+if [ "$pending" = yes ]; then
+	usermod --lock "$user"
+fi

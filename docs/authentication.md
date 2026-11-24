@@ -101,6 +101,97 @@ and similar options do not apply to root. For a policy, put
 `pam_pwquality` before `pam_unix` with `enforce_for_root`, as
 [dmodem-login.pam.sample](../samples/dmodem-login.pam.sample) shows.
 
+## New accounts in each backend
+
+
+A signup (`[signup] enabled = yes`) makes the new account in each
+backend of `[general] auth` that is set up to make accounts. Thus the
+caller can use the same name and password in all these backends.
+
+| backend | it makes accounts when | how |
+|---|---|---|
+| file | always | dmodem-login adds `user:bcrypt:note` at the end of the users file, under the lock of the file |
+| sql | `[sql] insert_query` is set | dmodem-login runs `insert_query` with `insert_args` (`user`, `password`, `pending`, `note`, in the sequence of its placeholders). `insert_hash = bcrypt` stores a bcrypt hash. `none` stores the password as the caller typed it |
+| ldap | `[ldap] add_dn` is set | dmodem-login binds as `add_bind_dn` and adds the entry at `add_dn` with `add_attributes`. Then it sets the password with the Password Modify extended operation, thus the server makes the hash. With `password_change = ad`, the entry gets `unicodePwd` (only on `ldaps://` or `starttls`) |
+| system | `[system] create_command` is set | dmodem-login runs `create_command` with `/bin/sh`. `{user}` and `{pending}` (`yes` or `no`) are in the command. The password and a line end go to its standard input |
+
+To use only some of these backends, set `[signup] backends`. If a
+backend in `backends` cannot make accounts, dmodem-login does not start.
+
+Before the new account is made, dmodem-login makes sure that no backend
+has the name:
+
+- Each backend that makes the account must not have the name. If one of
+  these backends cannot do the check (it does not operate), the caller
+  cannot get the name.
+- The other backends of `auth` also must not have the name, if they can
+  do the check. If one of them does not operate, dmodem-login records
+  this in the log only.
+- The name service of the system must not have the name.
+
+The checks of each backend are these:
+
+- file: the users file, in all cases of the letters.
+- sql: `exists_query` with the user. A row tells that the name is
+  there. Without `exists_query`, dmodem-login uses `query` if its only
+  argument is `user`. If not, only the database can refuse the name (for
+  example, with a `UNIQUE` key on the column of the names).
+- ldap: the entry at `add_dn`, and the entries that `search_filter`
+  finds under `search_base`.
+- system: the name service.
+
+If a backend cannot make the account, dmodem-login removes the account
+from the backends that made it before. It uses the reverse sequence:
+
+- file: dmodem-login removes the line.
+- sql: dmodem-login runs `delete_query` with the user.
+- ldap: dmodem-login deletes the entry.
+- system: dmodem-login runs `remove_command` with `{user}`.
+
+Without `delete_query` or `remove_command`, dmodem-login cannot remove
+the account. It records this in the log. The sysop must then remove the
+account.
+
+### Pending accounts
+
+With `[signup] pending = yes`, each backend must lock the new account
+until the sysop unlocks it. If a backend cannot lock the account,
+dmodem-login does not start:
+
+- file: the line is `user:!bcrypt`.
+- sql: `insert_args` must have `pending` (`1` for a pending account,
+  `0` for an account that can log in). `query` must refuse the locked
+  rows.
+- ldap: `add_pending_attributes` must lock the entry. These attributes
+  replace the attributes of `add_attributes` that have the same name.
+  For example, use `pwdAccountLockedTime=000001010000Z` for the ppolicy
+  overlay of OpenLDAP, `nsAccountLock=TRUE` for 389 DS, or
+  `userAccountControl=514` for Active Directory.
+- system: `create_command` gets `{pending}` and must lock the account.
+
+### An example script for system accounts
+
+[dmodem-login-useradd.sample](../samples/dmodem-login-useradd.sample)
+makes a system account with `useradd` and `chpasswd`. For a pending
+account, it locks the account with `usermod --lock`. To use it, do these
+steps:
+
+1. Install the script:
+   `install -m 755 samples/dmodem-login-useradd.sample /usr/local/sbin/dmodem-login-useradd`.
+2. Set these options in `[system]`:
+
+   ```
+   create_command = /usr/local/sbin/dmodem-login-useradd {user} {pending}
+   remove_command = userdel -r {user}
+   ```
+
+3. Run dmodem-login as root, because `useradd` must have root.
+4. Make sure that new accounts get a uid of `min_uid` or more. If not,
+   the `system` backend does not let them log in.
+
+Do not put `{user}` or `{pending}` in quotes in a command. dmodem-login
+puts each value in quotes for the shell.
+
 ## The same password elsewhere: the auth socket
 
 

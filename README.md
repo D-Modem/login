@@ -38,7 +38,7 @@ Selection: ppp
 - An LDAP provider: other programs (the BBS, a wiki, mail) can use the same users and passwords through LDAP ([docs/ldap-provider.md](docs/ldap-provider.md)).
 - Detection of PPP dialers (AutoPPP and PAP), with a pppd plugin.
 - Support for the classic AOL client when it dials in. dmodem-login emulates AOLnet, SprintNet and Tymnet. Then it connects the line to the AOL host of a BBS.
-- Menus with access by user and by group, guest access and self sign-up.
+- Menus with access by user and by group, guest access and self sign-up (the new account goes in each login backend: users file, SQL, LDAP, system).
 - A full-screen menu on ANSI and VT terminals, and a line menu on other terminals. The full-screen menu looks like a blue desktop from the 1990s. The cursor keys move the bar. For slow lines, dmodem-login sends only the changes to the screen.
 - `dmodem-login -setup`: full screens with pull-down menus and the help text from the sample, to change the configuration. The sysop can use them at the console or on a call.
 - Each item starts with the credentials of the caller and the details of the call: dialed number, caller ID, connect rate, modulation, error correction and time.

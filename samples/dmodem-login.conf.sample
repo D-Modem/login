@@ -130,14 +130,20 @@ enabled = no
 name = guest
 time_limit = 15m
 
-; new accounts: the name at the login prompt starts a signup, which adds
-; user:bcrypt to the users file (auth must have file).  pending = yes locks
-; the account (user:!hash) until the sysop removes the !
+; new accounts: the name at the login prompt starts a signup, which makes
+; the account in each backend of auth that is set up to make accounts (file:
+; user:bcrypt in the users file; sql: insert_query; ldap: add_dn; system:
+; create_command).  If one backend fails, the accounts already made are
+; taken back.  pending = yes locks the account in each backend
+; (user:!hash in the users file) until the sysop unlocks it
 [signup]
 enabled = no
 name = new
 pending = yes
 min_password = 8
+; only these backends of auth make the account (none: each one that is
+; set up to); a backend named here that is not set up is an error
+;backends = file ldap
 ;file = /etc/asterisk/dmodem-login.users
 ;message = "\r\nNew account.  Choose a user name and a password.\r\n"
 
@@ -190,6 +196,21 @@ search_filter = (&(objectClass=posixAccount)(uid={user}))
 ; OpenLDAP, 389 DS and most), or ad (Active Directory's unicodePwd, over
 ; ldaps:// or starttls only)
 ;password_change = exop
+; signups: the entry of a new account at add_dn ({user} in it), added as
+; add_bind_dn (by default search_bind_dn), with add_attributes
+; (name=value, | between them, {user} in the values).  The server sets the
+; password by Password Modify, so it makes the hash; with password_change =
+; ad the entry gets unicodePwd (ldaps:// or starttls only).  For pending =
+; yes, add_pending_attributes lock the entry (in place of the attributes
+; of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's
+; ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD
+;add_dn = uid={user},ou=people,dc=example,dc=com
+;add_bind_dn = cn=admin,dc=example,dc=com
+;add_bind_password = secret
+;add_attributes = objectClass=inetOrgPerson | cn={user} | sn={user}
+;add_pending_attributes = pwdAccountLockedTime=000001010000Z
+;add_attributes = objectClass=user | sAMAccountName={user} | userAccountControl=512
+;add_pending_attributes = userAccountControl=514
 
 ; system: the accounts of this machine, by PAM: the auth and account stacks
 ; of pam_service (dmodem-login.pam.sample as /etc/pam.d/dmodem-login), so local
@@ -202,6 +223,14 @@ pam_service = dmodem-login
 min_uid = 1000
 allow_root = no
 ;groups = dialup
+; signups: create_command makes the account by /bin/sh, {user} and
+; {pending} (yes or no: lock the account) in it, the password and a line
+; end on its input.  remove_command ({user}) takes it back when a later
+; backend fails.  Give the account a uid of min_uid or more.  For each
+; command: command_timeout
+;create_command = /usr/local/sbin/dmodem-login-useradd {user} {pending}
+;remove_command = userdel -r {user}
+;command_timeout = 30
 
 ; SQL: query gets args (user, password, in that order of placeholders) and
 ; returns one column: the stored password, checked as hash says (auto: by
@@ -224,6 +253,18 @@ hash = auto
 update_query = UPDATE users SET password = ? WHERE username = ?
 update_args = password user
 update_hash = bcrypt
+; signups: insert_query adds the row of a new account, with insert_args
+; (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the
+; order of its placeholders); insert_hash as update_hash.  For pending =
+; yes, insert_args must have pending (and query must refuse such rows).
+; exists_query (the user) finds a name that is taken (by default query,
+; when args is user); delete_query (the user) takes a row back when a
+; later backend fails
+;insert_query = INSERT INTO users (username, password, enabled) VALUES (?, ?, 1 - ?)
+;insert_args = user password pending
+;insert_hash = bcrypt
+;exists_query = SELECT 1 FROM users WHERE username = ?
+;delete_query = DELETE FROM users WHERE username = ?
 ;driver = postgres
 ;dsn = postgres://modem:secret@127.0.0.1/bbs?sslmode=disable
 ;query = SELECT 1 FROM users WHERE username = $1 AND password = crypt($2, password)

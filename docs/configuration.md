@@ -292,16 +292,25 @@ With `[signup] enabled = yes`, the `name` of the signup (`new`) at the
 login prompt starts a new account. The caller gives these items:
 
 - A user name. `user_pattern` must accept it, and no account in the
-  users file or the system can have it.
+  backend can have it.
 - A password of `min_password` characters, two times.
 
-dmodem-login adds the account at the end of the users file as
+dmodem-login makes the account in each backend of `[general] auth` that
+is set up to make accounts. It uses the sequence of `auth`. Refer to
+[New accounts in each backend](authentication.md#new-accounts-in-each-backend)
+for the settings of each backend. To use only some of these backends, set
+`[signup] backends` (for example, `backends = file ldap`).
+
+In the users file, dmodem-login adds the account at the end as
 `user:bcrypt:signup DATE CALLERID`. The users file is `[signup] file`
-(by default, the file of the `[file]` backend). `auth` must have `file`.
-With `pending = yes` (the default), the account is locked
-(`user:!bcrypt`). dmodem-login tells the caller that the account waits for
-the sysop. To unlock the account, the sysop removes the `!`. With
-`pending = no`, the caller is logged in immediately.
+(by default, the file of the `[file]` backend).
+
+With `pending = yes` (the default), the account is locked in each
+backend. In the users file, the line is `user:!bcrypt`. dmodem-login tells
+the caller that the account waits for the sysop. To unlock the account,
+the sysop removes the `!` and unlocks the account in the other backends.
+With `pending = no`, the caller is logged in immediately. `MODEM_AUTH`
+is the first backend that has the account.
 
 ## Caller ID
 

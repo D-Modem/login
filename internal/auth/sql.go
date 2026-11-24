@@ -33,6 +33,13 @@ type SQL struct {
 	updateQuery string
 	updateArgs  []string
 	updateHash  string
+	// new accounts (signups): insert_query with insert_args, the password
+	// as insert_hash says; exists_query and delete_query with the user
+	insertQuery string
+	insertArgs  []string
+	insertHash  string
+	existsQuery string
+	deleteQuery string
 }
 
 var sqlDrivers = map[string]string{
@@ -79,6 +86,22 @@ func NewSQL(s *config.Section) (Authenticator, error) {
 	}
 	if a.updateHash != "bcrypt" && a.updateHash != "none" {
 		return nil, fmt.Errorf("[sql] update_hash: %q (bcrypt, or none: the password as typed, for a query that hashes it)", a.updateHash)
+	}
+	a.insertQuery = s.Get("insert_query", "")
+	a.insertArgs = config.Fields(strings.ToLower(s.Get("insert_args", "user password")))
+	a.insertHash = strings.ToLower(s.Get("insert_hash", a.updateHash))
+	a.existsQuery = s.Get("exists_query", "")
+	a.deleteQuery = s.Get("delete_query", "")
+	for _, arg := range a.insertArgs {
+		if arg != "user" && arg != "password" && arg != "pending" && arg != "note" {
+			return nil, fmt.Errorf("[sql] insert_args: %q (user, password, pending, note)", arg)
+		}
+	}
+	if a.insertQuery != "" && !contains(a.insertArgs, "user") {
+		return nil, fmt.Errorf("[sql] insert_args: no user")
+	}
+	if a.insertHash != "bcrypt" && a.insertHash != "none" {
+		return nil, fmt.Errorf("[sql] insert_hash: %q (bcrypt, or none: the password as typed, for a query that hashes it)", a.insertHash)
 	}
 	// opening does not connect: a database that is down only fails the
 	// logins that reach it
