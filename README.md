@@ -54,7 +54,7 @@ You must have Go 1.22 or later. Do these steps:
 
 ```
 make                                                    # with PAM when libpam's headers are there
-make install                                            # /usr/local/bin/dmodem-login and the samples
+make install                                            # /usr/local/bin/dmodem-login, the samples and the systemd units
 dmodem-login -config /etc/asterisk/dmodem-login.conf -check   # check the configuration
 dmodem-login -config /etc/asterisk/dmodem-login.conf -setup   # or change it on a full screen
 ```

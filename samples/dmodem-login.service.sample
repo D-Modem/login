@@ -3,6 +3,8 @@
 # header = yes); [server] socket_group = asterisk lets Asterisk connect
 [Unit]
 Description=dmodem-login: login and menu for dial-up callers
+Documentation=https://github.com/D-Modem/login/blob/main/docs/running.md
+After=network.target
 Before=asterisk.service
 
 [Service]
