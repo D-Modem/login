@@ -15,7 +15,7 @@ for each call or as one server for all calls.
 ```
 Welcome to D-Modem.
 
-Connected at 33600 bit/s.
+Connected at 33600 bit/s (V.34, LAPM/V.42bis).
 
 login: alice
 Password: ******
@@ -41,7 +41,7 @@ Selection: ppp
 - Menus with access by user and by group, guest access and self sign-up.
 - A full-screen menu on ANSI and VT terminals, and a line menu on other terminals. The full-screen menu looks like a blue desktop from the 1990s. The cursor keys move the bar. For slow lines, dmodem-login sends only the changes to the screen.
 - `dmodem-login -setup`: full screens with pull-down menus and the help text from the sample, to change the configuration. The sysop can use them at the console or on a call.
-- Each item starts with the credentials of the caller and the details of the call: dialed number, caller ID, connect rate and time.
+- Each item starts with the credentials of the caller and the details of the call: dialed number, caller ID, connect rate, modulation, error correction and time.
 - Drop files for doors, a list of the last callers, and the transfer of a caller to a different menu.
 - A FreePBX configuration that is ready to use ([freepbx/](freepbx/README.md)).
 
