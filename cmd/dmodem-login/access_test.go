@@ -145,11 +145,15 @@ func TestAccessRules(t *testing.T) {
 			t.Errorf("name %q taken: %v, want %v", name, got, taken)
 		}
 	}
-	if err := appendUser(filepath.Join(dir, "users"), "carol", "carol:x\n"); err != nil {
+	fc := auth.FileAt(filepath.Join(dir, "users"), "auto")
+	if err := fc.CreateUser(context.Background(), auth.NewAccount{User: "carol", Password: "x"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := appendUser(filepath.Join(dir, "users"), "Carol", "Carol:x\n"); err == nil {
-		t.Error("a second carol")
+	if err := fc.CreateUser(context.Background(), auth.NewAccount{User: "Carol", Password: "x"}); !errors.Is(err, auth.ErrTaken) {
+		t.Errorf("a second carol: %v", err)
+	}
+	if err := fc.RemoveUser(context.Background(), "carol"); err != nil {
+		t.Fatal(err)
 	}
 
 	for _, bad := range []string{"[number 1[]\nuser = alice", "[number 555]\nitem = nothing",

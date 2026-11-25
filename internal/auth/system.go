@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/D-Modem/login/internal/config"
 )
@@ -24,6 +25,11 @@ type System struct {
 	lookup   func(string) (*Account, error)
 	inGroups func(*Account, []string) (bool, error)
 	pam      func(service, user, password string) error
+	// new accounts (signups): create_command, the password on its input;
+	// remove_command takes one back
+	createCommand  string
+	removeCommand  string
+	commandTimeout time.Duration
 }
 
 // Account: a user of the name service
@@ -42,6 +48,11 @@ func NewSystem(s *config.Section) (Authenticator, error) {
 		lookup:   LookupNSS,
 		inGroups: InGroupsNSS,
 		pam:      pamAuthenticate,
+	}
+	a.createCommand = s.Get("create_command", "")
+	a.removeCommand = s.Get("remove_command", "")
+	if a.commandTimeout, err = s.Duration("command_timeout", 30*time.Second); err != nil {
+		return nil, err
 	}
 	if a.minUID, err = s.Int("min_uid", 1000); err != nil {
 		return nil, err

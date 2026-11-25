@@ -14,7 +14,7 @@ full.
 | [`[terminal]`](#terminal) | the caller's terminal, asked before the banner: ANSI (and its size), VT52, what an ANSI terminal is (xterm, a VT220, SyncTERM...), and a Commodore by its keys at the login. |
 | [`[groups]`](#groups) | groups of users for the items' groups = (members of system groups count too, for logins by auth = system) |
 | [`[guest]`](#guest) | a guest account: its name at the login prompt, no password; it sees only the items with guest = yes, for time_limit at most. |
-| [`[signup]`](#signup) | new accounts: the name at the login prompt starts a signup, which adds user:bcrypt to the users file (auth must have file). |
+| [`[signup]`](#signup) | new accounts: the name at the login prompt starts a signup, which makes the account in each backend of auth that is set up to make accounts (file: user:bcrypt in the users file; sql: insert_query; ldap: add_dn; system: create_command). |
 | [`[callerid]`](#callerid) | caller ID: numbers or patterns (* and ? as in file names; anonymous: no caller ID). |
 | [`[number NAME]`](#number-name) | a number of its own: deny = yes refuses it; user = logs it in as that user without a password (caller ID can be forged: only where the network vouches for it); item = starts that item at once after the login. |
 | [`[file]`](#file) | users in a text file: user:hash, # comments. |
@@ -90,7 +90,7 @@ a guest account: its name at the login prompt, no password; it sees only the ite
 
 ## `[signup]`
 
-new accounts: the name at the login prompt starts a signup, which adds user:bcrypt to the users file (auth must have file).  pending = yes locks the account (user:!hash) until the sysop removes the !.
+new accounts: the name at the login prompt starts a signup, which makes the account in each backend of auth that is set up to make accounts (file: user:bcrypt in the users file; sql: insert_query; ldap: add_dn; system: create_command).  If one backend fails, the accounts already made are taken back.  pending = yes locks the account in each backend (user:!hash in the users file) until the sysop unlocks it.
 
 | key | sample | what it does |
 |---|---|---|
@@ -98,8 +98,9 @@ new accounts: the name at the login prompt starts a signup, which adds user:bcry
 | `name` | `new` | See the section above. |
 | `pending` | `yes` | See the section above. |
 | `min_password` | `8` | See the section above. |
-| `file` | `/etc/asterisk/dmodem-login.users` | See the section above. |
-| `message` | `\r\nNew account.  Choose a user name and a password.\r\n` | See the section above. |
+| `backends` | `file ldap` | only these backends of auth make the account (none: each one that is set up to); a backend named here that is not set up is an error. |
+| `file` | `/etc/asterisk/dmodem-login.users` | only these backends of auth make the account (none: each one that is set up to); a backend named here that is not set up is an error. |
+| `message` | `\r\nNew account.  Choose a user name and a password.\r\n` | only these backends of auth make the account (none: each one that is set up to); a backend named here that is not set up is an error. |
 
 ## `[callerid]`
 
@@ -152,6 +153,11 @@ LDAP: a bind as the user.  Either bind_dn with {user} in it, or a search for the
 | `group_base` | `ou=groups,dc=example,dc=com` | groups for the items' groups = (no group_base: LDAP has none): a group is an entry under group_base that group_filter finds, {group} the item's group, {dn} the caller's entry, {user} their name; searched as search_bind_dn, else as the caller. |
 | `group_filter` | `(&(cn={group})(\|(member={dn})(uniqueMember={dn})(memberUid={user})))` | groups for the items' groups = (no group_base: LDAP has none): a group is an entry under group_base that group_filter finds, {group} the item's group, {dn} the caller's entry, {user} their name; searched as search_bind_dn, else as the caller. |
 | `password_change` | `exop` | how mode = passwd changes a password: exop (Password Modify, RFC 3062; OpenLDAP, 389 DS and most), or ad (Active Directory's unicodePwd, over ldaps:// or starttls only) |
+| `add_dn` | `uid={user},ou=people,dc=example,dc=com` | signups: the entry of a new account at add_dn ({user} in it), added as add_bind_dn (by default search_bind_dn), with add_attributes (name=value, \| between them, {user} in the values). The server sets the password by Password Modify, so it makes the hash; with password_change = ad the entry gets unicodePwd (ldaps:// or starttls only). For pending = yes, add_pending_attributes lock the entry (in place of the attributes of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD. |
+| `add_bind_dn` | `cn=admin,dc=example,dc=com` | signups: the entry of a new account at add_dn ({user} in it), added as add_bind_dn (by default search_bind_dn), with add_attributes (name=value, \| between them, {user} in the values). The server sets the password by Password Modify, so it makes the hash; with password_change = ad the entry gets unicodePwd (ldaps:// or starttls only). For pending = yes, add_pending_attributes lock the entry (in place of the attributes of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD. |
+| `add_bind_password` | `secret` | signups: the entry of a new account at add_dn ({user} in it), added as add_bind_dn (by default search_bind_dn), with add_attributes (name=value, \| between them, {user} in the values). The server sets the password by Password Modify, so it makes the hash; with password_change = ad the entry gets unicodePwd (ldaps:// or starttls only). For pending = yes, add_pending_attributes lock the entry (in place of the attributes of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD. |
+| `add_attributes` | `objectClass=inetOrgPerson \| cn={user} \| sn={user}` | signups: the entry of a new account at add_dn ({user} in it), added as add_bind_dn (by default search_bind_dn), with add_attributes (name=value, \| between them, {user} in the values). The server sets the password by Password Modify, so it makes the hash; with password_change = ad the entry gets unicodePwd (ldaps:// or starttls only). For pending = yes, add_pending_attributes lock the entry (in place of the attributes of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD. Also: `objectClass=user \\| sAMAccountName={user} \\| userAccountControl=512`. |
+| `add_pending_attributes` | `pwdAccountLockedTime=000001010000Z` | signups: the entry of a new account at add_dn ({user} in it), added as add_bind_dn (by default search_bind_dn), with add_attributes (name=value, \| between them, {user} in the values). The server sets the password by Password Modify, so it makes the hash; with password_change = ad the entry gets unicodePwd (ldaps:// or starttls only). For pending = yes, add_pending_attributes lock the entry (in place of the attributes of the same name): pwdAccountLockedTime=000001010000Z for OpenLDAP's ppolicy, nsAccountLock=TRUE for 389 DS, userAccountControl=514 for AD. Also: `userAccountControl=514`. |
 
 ## `[system]`
 
@@ -163,6 +169,9 @@ system: the accounts of this machine, by PAM: the auth and account stacks of pam
 | `min_uid` | `1000` | See the section above. |
 | `allow_root` | `no` | See the section above. |
 | `groups` | `dialup` | See the section above. |
+| `create_command` | `/usr/local/sbin/dmodem-login-useradd {user} {pending}` | signups: create_command makes the account by /bin/sh, {user} and {pending} (yes or no: lock the account) in it, the password and a line end on its input. remove_command ({user}) takes it back when a later backend fails. Give the account a uid of min_uid or more. For each command: command_timeout. |
+| `remove_command` | `userdel -r {user}` | signups: create_command makes the account by /bin/sh, {user} and {pending} (yes or no: lock the account) in it, the password and a line end on its input. remove_command ({user}) takes it back when a later backend fails. Give the account a uid of min_uid or more. For each command: command_timeout. |
+| `command_timeout` | `30` | signups: create_command makes the account by /bin/sh, {user} and {pending} (yes or no: lock the account) in it, the password and a line end on its input. remove_command ({user}) takes it back when a later backend fails. Give the account a uid of min_uid or more. For each command: command_timeout. |
 
 ## `[sql]`
 
@@ -179,6 +188,11 @@ SQL: query gets args (user, password, in that order of placeholders) and returns
 | `update_query` | `UPDATE users SET password = ? WHERE username = ?` | mode = passwd items: update_query sets the password, with update_args (user, password, old_password, in the order of its placeholders); update_hash = bcrypt stores a bcrypt hash, none the password as typed (for a query that hashes it). Without update_query, SQL passwords cannot be changed from the menu. Also: `UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE username = $2`. |
 | `update_args` | `password user` | mode = passwd items: update_query sets the password, with update_args (user, password, old_password, in the order of its placeholders); update_hash = bcrypt stores a bcrypt hash, none the password as typed (for a query that hashes it). Without update_query, SQL passwords cannot be changed from the menu. |
 | `update_hash` | `bcrypt` | mode = passwd items: update_query sets the password, with update_args (user, password, old_password, in the order of its placeholders); update_hash = bcrypt stores a bcrypt hash, none the password as typed (for a query that hashes it). Without update_query, SQL passwords cannot be changed from the menu. Also: `none`. |
+| `insert_query` | `INSERT INTO users (username, password, enabled) VALUES (?, ?, 1 - ?)` | signups: insert_query adds the row of a new account, with insert_args (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the order of its placeholders); insert_hash as update_hash. For pending = yes, insert_args must have pending (and query must refuse such rows). exists_query (the user) finds a name that is taken (by default query, when args is user); delete_query (the user) takes a row back when a later backend fails. |
+| `insert_args` | `user password pending` | signups: insert_query adds the row of a new account, with insert_args (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the order of its placeholders); insert_hash as update_hash. For pending = yes, insert_args must have pending (and query must refuse such rows). exists_query (the user) finds a name that is taken (by default query, when args is user); delete_query (the user) takes a row back when a later backend fails. |
+| `insert_hash` | `bcrypt` | signups: insert_query adds the row of a new account, with insert_args (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the order of its placeholders); insert_hash as update_hash. For pending = yes, insert_args must have pending (and query must refuse such rows). exists_query (the user) finds a name that is taken (by default query, when args is user); delete_query (the user) takes a row back when a later backend fails. |
+| `exists_query` | `SELECT 1 FROM users WHERE username = ?` | signups: insert_query adds the row of a new account, with insert_args (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the order of its placeholders); insert_hash as update_hash. For pending = yes, insert_args must have pending (and query must refuse such rows). exists_query (the user) finds a name that is taken (by default query, when args is user); delete_query (the user) takes a row back when a later backend fails. |
+| `delete_query` | `DELETE FROM users WHERE username = ?` | signups: insert_query adds the row of a new account, with insert_args (user, password, pending: 1 or 0, note: signup DATE CALLERID, in the order of its placeholders); insert_hash as update_hash. For pending = yes, insert_args must have pending (and query must refuse such rows). exists_query (the user) finds a name that is taken (by default query, when args is user); delete_query (the user) takes a row back when a later backend fails. |
 
 ## `[server]`
 

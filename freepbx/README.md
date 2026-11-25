@@ -126,7 +126,9 @@ maximum of two hours each day (`time_limit`, `daily_limit`). The menu
 prompt shows the minutes that remain. To let callers make their own
 accounts, set `[signup] enabled = yes`. Then "new" at the login prompt
 adds a locked line to the users file. To unlock the line, remove its
-`!`.
+`!`. If `[general] auth` also has SQL, LDAP or system accounts, the
+signup can also make the account there. Refer to
+[New accounts in each backend](../docs/authentication.md#new-accounts-in-each-backend).
 
 ## When it does not work
 

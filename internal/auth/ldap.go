@@ -39,6 +39,13 @@ type LDAP struct {
 	// how a password is changed: exop (Password Modify) or ad
 	// (Active Directory's unicodePwd)
 	passwordChange string
+	// new accounts (signups): an entry at add_dn with add_attributes
+	// (add_pending_attributes for a pending one), added as add_bind_dn
+	addDN        string
+	addBindDN    string
+	addBindPass  string
+	addAttrs     []ldapAttr
+	pendingAttrs []ldapAttr
 }
 
 // NewLDAP: the [ldap] backend from its section, checked
@@ -58,6 +65,24 @@ func NewLDAP(s *config.Section) (Authenticator, error) {
 	}
 	if a.passwordChange != "exop" && a.passwordChange != "ad" {
 		return nil, fmt.Errorf("[ldap] password_change: %q (exop or ad)", a.passwordChange)
+	}
+	a.addDN = s.Get("add_dn", "")
+	a.addBindDN = s.Get("add_bind_dn", a.searchDN)
+	a.addBindPass = s.Get("add_bind_password", a.searchPass)
+	if a.addAttrs, err = parseLDAPAttrs(s.Get("add_attributes",
+		"objectClass=inetOrgPerson | cn={user} | sn={user}")); err != nil {
+		return nil, fmt.Errorf("[ldap] add_attributes: %v", err)
+	}
+	if a.pendingAttrs, err = parseLDAPAttrs(s.Get("add_pending_attributes", "")); err != nil {
+		return nil, fmt.Errorf("[ldap] add_pending_attributes: %v", err)
+	}
+	if a.addDN != "" {
+		if !strings.Contains(a.addDN, "{user}") {
+			return nil, fmt.Errorf("[ldap] add_dn: no {user} in %q", a.addDN)
+		}
+		if a.addBindDN == "" {
+			return nil, fmt.Errorf("[ldap] add_dn: needs add_bind_dn (or search_bind_dn), an account that can add entries")
+		}
 	}
 	if a.startTLS, err = s.Bool("starttls", false); err != nil {
 		return nil, err

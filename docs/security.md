@@ -22,6 +22,13 @@
   an account and access to all items that have no `users` or `groups`.
   Give `guest = yes` to public items, and give the other items to groups
   only.
+- A signup can make accounts in SQL, LDAP and the system (refer to
+  [New accounts in each backend](authentication.md#new-accounts-in-each-backend)).
+  The account of `[ldap] add_bind_dn` can add entries: give it access to
+  the `add_dn` branch only. `[system] create_command` runs as the user of
+  dmodem-login, which is root for `useradd`. Use `pending = yes` with these
+  backends, and keep the password of `add_bind_dn` out of a configuration
+  file that other users can read.
 - The socket of a server is only as safe as its permissions. Each user
   who can connect to it gets a login prompt. With `trust_user`, that user
   can log in as any user that they name. Use `socket_mode` and

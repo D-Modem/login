@@ -130,11 +130,18 @@ func (u *setupUI) choicesFor(sec string, kd *confdoc.Kind, k *confdoc.Key) *choi
 		return closed("auto", "by the stored password's prefix", "bcrypt", "bcrypt hashes", "sha256", "SHA-256, hex",
 			"sha512", "SHA-512, hex", "ssha256", "salted SHA-256", "ssha512", "salted SHA-512",
 			"plain", "the password as it is", "none", "the query checks it: any row is a yes")
-	case "sql.update_hash":
+	case "signup.backends":
+		return pairs(false, true, []string{
+			"file", "the users file", "ldap", "the LDAP directory (add_dn)",
+			"sql", "the SQL database (insert_query)", "system", "this machine (create_command)"})
+	case "sql.update_hash", "sql.insert_hash":
 		return closed("bcrypt", "store a bcrypt hash", "none", "the password as typed (the query hashes it)")
 	case "sql.args":
 		return closed("user", "the query has one placeholder: the user", "user password", "user, then password",
 			"password user", "password, then user")
+	case "sql.insert_args":
+		return suggest("user password", "user, then password", "user password pending", "user, password, then pending (1 or 0)",
+			"user password pending note", "user, password, pending, then the note")
 	case "sql.update_args":
 		return suggest("password user", "new password, then user", "user password", "user, then new password",
 			"password user old_password", "new password, user, old password")

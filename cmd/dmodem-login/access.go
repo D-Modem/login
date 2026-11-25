@@ -56,7 +56,7 @@ type guestSettings struct {
 	timeLimit time.Duration
 }
 
-// signupSettings: [signup], new accounts in the users file
+// signupSettings: [signup], new accounts in each backend that makes them
 type signupSettings struct {
 	enabled     bool
 	name        string // typed at the login prompt
@@ -64,6 +64,77 @@ type signupSettings struct {
 	pending     bool // new accounts locked until the sysop unlocks them
 	minPassword int
 	message     string
+	// the backends that make the account, in the sequence of [general]
+	// auth (the file backend at [signup] file)
+	creators []auth.AccountCreator
+}
+
+// signupCreators: the backends of [general] auth that make a signup's
+// account: those of [signup] backends, or (none named) each one that is
+// set up to make accounts.  A pending account must be locked in each of
+// them.
+func signupCreators(s *settings, names []string) ([]auth.AccountCreator, error) {
+	for _, n := range names {
+		if n == "pam" {
+			n = "system"
+		}
+		found := false
+		for _, b := range s.backends {
+			found = found || b.Name() == n
+		}
+		if !found {
+			return nil, fmt.Errorf("[signup] backends: %q is not in [general] auth", n)
+		}
+	}
+	var out []auth.AccountCreator
+	for _, b := range s.backends {
+		c, ok := b.(auth.AccountCreator)
+		named := contains(names, b.Name()) || (b.Name() == "system" && contains(names, "pam"))
+		if len(names) > 0 && !named {
+			continue
+		}
+		if !ok || !c.CanCreate() {
+			if named {
+				return nil, fmt.Errorf("[signup] backends: %s cannot make accounts (%s)", b.Name(), createHint(b.Name()))
+			}
+			continue
+		}
+		if f, isFile := b.(*auth.File); isFile {
+			c = auth.FileAt(s.signup.file, f.Scheme())
+		}
+		if s.signup.pending && !c.CanLock() {
+			return nil, fmt.Errorf("[signup] pending = yes: %s cannot lock a new account (%s)", b.Name(), lockHint(b.Name()))
+		}
+		out = append(out, c)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("[signup] enabled: no backend of [general] auth makes accounts (file; sql with insert_query; ldap with add_dn; system with create_command)")
+	}
+	return out, nil
+}
+
+// createHint: the setting that lets a backend make accounts
+func createHint(name string) string {
+	switch name {
+	case "sql":
+		return "set [sql] insert_query"
+	case "ldap":
+		return "set [ldap] add_dn"
+	case "system":
+		return "set [system] create_command"
+	}
+	return "it has no way to"
+}
+
+// lockHint: the setting that lets a backend lock a pending account
+func lockHint(name string) string {
+	switch name {
+	case "sql":
+		return "put pending in [sql] insert_args"
+	case "ldap":
+		return "set [ldap] add_pending_attributes"
+	}
+	return "it has no way to"
 }
 
 // numberRule: a [number PATTERN] section
@@ -144,8 +215,10 @@ func loadAccess(c *config.File, s *settings) error {
 		return err
 	}
 	s.signup.message = config.Unescape(su.Get("message", `\r\nNew account.  Choose a user name and a password.\r\n`))
-	if s.signup.enabled && !contains(s.auth, "file") {
-		return fmt.Errorf("[signup] enabled: new accounts go in the users file, and [general] auth has no file")
+	if s.signup.enabled {
+		if s.signup.creators, err = signupCreators(s, config.Fields(strings.ToLower(su.Get("backends", "")))); err != nil {
+			return err
+		}
 	}
 	if s.guest.enabled && s.signup.enabled && strings.EqualFold(s.guest.name, s.signup.name) {
 		return fmt.Errorf("[guest] name and [signup] name are both %q", s.guest.name)

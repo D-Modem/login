@@ -4,24 +4,22 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/D-Modem/login/internal/auth"
 	"github.com/D-Modem/login/internal/term"
-	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/sys/unix"
 )
 
 // errPending: the new account waits for the sysop
 var errPending = errors.New("account pending approval")
 
-// signup: a new account in the users file, the caller logged in with it
-// (or errPending with signup's pending = yes)
+// signup: a new account in each backend of [signup] (the users file, SQL,
+// LDAP, system accounts), the caller logged in with it (or errPending
+// with signup's pending = yes)
 func signup(t *term.Term, s *settings, sess *session, deadline time.Time) error {
 	su := s.signup
 	if err := t.Write(su.message); err != nil {
@@ -77,32 +75,32 @@ func signup(t *term.Term, s *settings, sess *session, deadline time.Time) error 
 		pw = p
 		break
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	acct := auth.NewAccount{
+		User:     name,
+		Password: pw,
+		Pending:  su.pending,
+		Note:     fmt.Sprintf("signup %s %s", time.Now().Format("2006-01-02 15:04"), sess.CallerID),
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	made, err := auth.CreateAccounts(ctx, su.creators, acct, logf)
 	if err != nil {
-		return err
-	}
-	lock := ""
-	if su.pending {
-		lock = "!"
-	}
-	note := fmt.Sprintf("signup %s %s", time.Now().Format("2006-01-02 15:04"), sess.CallerID)
-	note = strings.Map(func(r rune) rune {
-		if r == ':' || r == '\n' || r == '\r' {
-			return ' '
-		}
-		return r
-	}, note)
-	if err := appendUser(su.file, name, name+":"+lock+string(hash)+":"+note+"\n"); err != nil {
 		logf("signup %s: %v", name, err)
-		t.Write("\r\nSorry, no new accounts now.\r\n")
+		if errors.Is(err, auth.ErrTaken) {
+			t.Write("\r\nThat name is taken.  Call again to choose another.\r\n")
+		} else {
+			t.Write("\r\nSorry, no new accounts now.\r\n")
+		}
 		return err
 	}
-	logf("signup user=%s pending=%v %v", name, su.pending, sess)
+	logf("signup user=%s pending=%v backends=%s %v", name, su.pending, strings.Join(made, ","), sess)
 	if su.pending {
 		t.Write("\r\nThank you.  Your account waits for the sysop's approval.\r\n")
 		return errPending
 	}
-	sess.User, sess.Password, sess.Auth = name, pw, "file"
+	// the first backend of [general] auth that has the account is the one
+	// that a login finds it in
+	sess.User, sess.Password, sess.Auth = name, pw, made[0]
 	return nil
 }
 
@@ -115,8 +113,35 @@ func (s *settings) nameTaken(name string) string {
 		strings.EqualFold(name, "root"):
 		return "That name is taken."
 	}
-	if has, err := fileHasUser(s.signup.file, name); err != nil || has {
-		return "That name is taken."
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	// the backends that make the account: each must be free of the name
+	// (one that cannot be asked stops the signup)
+	for _, c := range s.signup.creators {
+		has, known, err := c.HasUser(ctx, name)
+		if err != nil {
+			logf("signup %s: %s: %v", name, c.Name(), err)
+			return "That name cannot be checked now."
+		}
+		if known && has {
+			return "That name is taken."
+		}
+	}
+	// the other backends: a login that finds the new account first would
+	// shadow an account there (one that cannot be asked is in the log only)
+	for _, b := range s.backends {
+		c, ok := b.(auth.UserChecker)
+		if !ok || isCreator(s.signup.creators, b.Name()) {
+			continue
+		}
+		has, known, err := c.HasUser(ctx, name)
+		if err != nil {
+			logf("signup %s: %s: %v", name, c.Name(), err)
+			continue
+		}
+		if known && has {
+			return "That name is taken."
+		}
 	}
 	// a system account's name would let the new user log in to a
 	// selection run_as that account
@@ -126,51 +151,12 @@ func (s *settings) nameTaken(name string) string {
 	return ""
 }
 
-// fileHasUser: whether the users file has name (in any case)
-func fileHasUser(path, name string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-	return scanUsers(f, name)
-}
-
-// scanUsers: whether the open users file has name (in any case)
-func scanUsers(f *os.File, name string) (bool, error) {
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		if n, _, ok := strings.Cut(strings.TrimSpace(sc.Text()), ":"); ok && strings.EqualFold(n, name) {
-			return true, nil
+// isCreator: whether the backend name makes signups' accounts
+func isCreator(creators []auth.AccountCreator, name string) bool {
+	for _, c := range creators {
+		if c.Name() == name {
+			return true
 		}
 	}
-	return false, sc.Err()
-}
-
-// appendUser: line at the end of the users file, unless name is there
-// already (looked at again under the lock: two signups at once)
-func appendUser(path, name, line string) error {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if err := unix.Flock(int(f.Fd()), unix.LOCK_EX); err != nil {
-		return err
-	}
-	if has, err := scanUsers(f, name); err != nil || has {
-		if err == nil {
-			err = fmt.Errorf("%s is taken", name)
-		}
-		return err
-	}
-	// a file without a line end at its end
-	if st, err := f.Stat(); err == nil && st.Size() > 0 {
-		last := make([]byte, 1)
-		if _, err := f.ReadAt(last, st.Size()-1); err == nil && last[0] != '\n' {
-			line = "\n" + line
-		}
-	}
-	_, err = f.WriteString(line)
-	return err
+	return false
 }

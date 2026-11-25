@@ -36,6 +36,9 @@ func NewFile(s *config.Section) (Authenticator, error) {
 // Name: the backend's Name, for {auth} and the log
 func (a *File) Name() string { return "file" }
 
+// Scheme: hash, the scheme of the stored passwords (auto: by prefix)
+func (a *File) Scheme() string { return a.scheme }
+
 // Authenticate: the user's line in the users file and its hash
 // checked; a locked entry (!) is refused
 func (a *File) Authenticate(_ context.Context, user, password string) error {
